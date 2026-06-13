@@ -24,9 +24,11 @@ struct SparseTableMin {
         for (int i = 0; i < n; i++) {
             t[0][i] = {arr[i], i};
         }
-        for (int j = 1; j < k; j++)
-            for (int i = 0; i + (1 << j) <= n; i++)
+        for (int j = 1; j < k; j++) {
+            for (int i = 0; i + (1 << j) <= n; i++) {
                 t[j][i] = min(t[j-1][i], t[j-1][i + (1 << (j-1))]);
+            }
+        }
     }
 
     // {min value, index of leftmost min} over [L, R)
