@@ -4,7 +4,7 @@ using namespace std;
 /*
     Utility to find LCA and distance between arbitrary tree nodes for static graphs.
     
-    Build: O(nlogn) - it uses an Euler path + builds a range-minimum-query data structure (sparse table)
+    Build: O(nlogn) - it builds a Euler path and a range-minimum-query data structure (sparse table) to compute the LCA
     Query: O(1)
 
     Usage:
