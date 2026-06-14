@@ -24,7 +24,8 @@ using namespace std;
 */
 
 struct UnionFind {
-    int n, numSets;
+    int n;
+    int numSets;
     vector<int> parent;  // parent[i] == i for representatives; use find(i) otherwise
     vector<int> size;    // size[r] valid only when r is a representative
 
