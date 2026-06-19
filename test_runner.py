@@ -8,11 +8,11 @@ import shutil
 import hashlib
 
 # ===== C++ compiler config (edit here) =====
-CPP_COMPILER = 'g++-14'
+CPP_COMPILER = 'g++-16'
 CPP_FLAGS = [
     '-std=c++23', '-O2', '-g',
     '-DLOCAL',
-    '-Wall', '-Wextra', '-Wconversion', '-Wshadow',
+    '-Wall', '-Wextra', '-Wshadow',
     '-D_GLIBCXX_ASSERTIONS',
     '-Winvalid-pch',
 ]
