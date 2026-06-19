@@ -151,8 +151,13 @@ def cpp_strategy(src):
     run_cmd = [f'./{binary}']
 
     def cleanup():
-        if os.path.exists(binary):
-            os.remove(binary)
+        # The compiled binary, plus a.out from any stray default-output compile.
+        for f in [binary, 'a.out']:
+            if os.path.exists(f):
+                os.remove(f)
+        # Debug-symbol bundles are directories (e.g. dp_1639.dSYM, a.out.dSYM).
+        for d in glob.glob('*.dSYM'):
+            shutil.rmtree(d, ignore_errors=True)
 
     return compile_cmd, run_cmd, cleanup
 
