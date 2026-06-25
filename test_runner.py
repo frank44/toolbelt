@@ -15,6 +15,11 @@ CPP_FLAGS = [
     '-Wall', '-Wextra', '-Wshadow',
     '-D_GLIBCXX_ASSERTIONS',
     '-Winvalid-pch',
+    # --- debug/sanitizer flags (local only; never ship to CF) ---
+    '-fsanitize=address,undefined',  # catch OOB/UAF + UB (signed overflow, etc.)
+    '-fno-sanitize-recover=all',     # abort + nonzero exit on first error, so a test FAILS
+    '-fno-omit-frame-pointer',       # readable stack traces in sanitizer reports
+    '-D_GLIBCXX_DEBUG',              # bounds-check vector::operator[], catch bad iterators
 ]
 
 # ===== Precompiled-header cache (auto-managed, full <bits/stdc++.h>) =====
