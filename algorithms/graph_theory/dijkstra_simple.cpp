@@ -1,8 +1,10 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+// Tested on: https://leetcode.com/problems/minimum-weighted-subgraph-with-the-required-paths/
+
 using i64 = long long;
-using Edge = pair<i64, int>; // weight, v
+using Edge = pair<i64, int>; // weight, to
 
 const i64 INF = 1'000'000'000'000'000'000LL; // 1e18
 
