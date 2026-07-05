@@ -1,5 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
+using i64 = long long;
 
 /*
     Generic Fenwick Tree (Binary Indexed Tree) for point-update / prefix-sum
@@ -17,28 +18,28 @@ using namespace std;
         - scale multiplies every value by c; watch for overflow.
 
     Usage:
-        FenwickTree<long long> ft(n);   // n zeros
-        ft.update(i, delta);            // arr[i] += delta
-        ft.set(i, value);               // arr[i] = value
-        auto s  = ft.rangeSum(a, b);    // sum over [a, b] inclusive
-        auto p  = ft.prefixSum(i);      // sum over [0, i] inclusive
-        auto sf = ft.suffixSum(i);      // sum over [i, n-1] inclusive
-        auto v  = ft.pointGet(i);       // value at index i
-        int  k  = ft.lowerBound(target);// smallest i with prefixSum(i) >= target, else n
+        FenwickTree<i64> ft(n);   // n zeros
+        ft.update(i, delta);             // arr[i] += delta
+        ft.set(i, value);                // arr[i] = value
+        auto s  = ft.rangeSum(a, b);     // sum over [a, b] inclusive
+        auto p  = ft.prefixSum(i);       // sum over [0, i] inclusive
+        auto sf = ft.suffixSum(i);       // sum over [i, n-1] inclusive
+        auto v  = ft.pointGet(i);        // value at index i
+        int  k  = ft.lowerBound(target); // smallest i with prefixSum(i) >= target, else n
 
         vector<long long> a = {...};
         FenwickTree<long long> ft2(a);  // build directly from values in O(n)
 */
 
-template <typename T = long long>
+
+template <typename T = i64>
 struct FenwickTree {
-    int n;             // number of logical (0-indexed) positions
-    vector<T> tree;    // 1-indexed; tree[0] unused
+    int n;             // number of logical positions (0-indexed)
+    vector<T> tree;
     T totalSum;        // running sum of all values, for O(1) total() / suffixSum
 
     FenwickTree(int n_) : n(n_), tree(n_ + 1, T{}), totalSum(T{}) {}
 
-    // O(n) build from a 0-indexed array of initial values.
     FenwickTree(const vector<T>& a) : n((int)a.size()), tree(a.size() + 1, T{}), totalSum(T{}) {
         for (int i = 0; i < n; i++) {
             tree[i + 1] += a[i];
@@ -83,11 +84,6 @@ struct FenwickTree {
     // sum over [i, n-1] inclusive
     T suffixSum(int i) const {
         return totalSum - prefixSum(i - 1);
-    }
-
-    // sum over all positions [0, n-1]
-    T total() const {
-        return totalSum;
     }
 
     // value at index i, in O(log n)
