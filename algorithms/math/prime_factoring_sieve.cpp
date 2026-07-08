@@ -9,12 +9,14 @@ using namespace std;
     Space: O(N)
 
     Tested using: https://leetcode.com/problems/divisible-game/
-    Note: to only run once, drop this at global scope
+    Note: 
+        > To only run once, drop this in the global scope
+        > spf[x] = x iff x is prime
 */
 const int MAX_N = 1'000'000;
 vector<int> spf = []{ // smallest-prime-factor sieve
     vector<int> s(MAX_N+1);
-    s[0] = s[1] = 1; // 0, 1 edge cases
+    s[0] = s[1] = -1; // 0, 1 edge cases
     for (int i=2; i<=MAX_N; i++) {
         if (s[i] == 0) {
             for (int j=i; j<=MAX_N; j+=i) {
@@ -39,6 +41,7 @@ vector<int> uniquePrimeFactors(int x) {
     }
     return primes;
 }
+
 
 // returns all prime factors in ascending order (includes dupes)
 vector<int> primeFactors(int x) {
