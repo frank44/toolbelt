@@ -6,7 +6,7 @@ using i64 = long long;
     Exact nCr calculation in O(N), for answers that fit in a 64-bit integer, otherwise returns -1
         > Handles huge n with small m, e.g. choose(2'000'000'000, 3)
         > Out-of-range inputs (m < 0 or m > n) return 0
-        > Intermediate calculations never exceed the final answer, so no overflow danger as long as the answer itself fits.  
+        > Intermediate calculations never exceed the final answer, so no overflow danger as long as the answer itself fits
     
         O(min(m, n-m)) per call
 */

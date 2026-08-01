@@ -29,6 +29,8 @@ vector<int> spf = []{ // smallest-prime-factor sieve
     return s;
 }();
 
+// =============== the above snippet is required, the following are optional helpers ========================
+
 // returns all deduped prime factors in ascending order
 vector<int> uniquePrimeFactors(int x) {
     vector<int> primes;
