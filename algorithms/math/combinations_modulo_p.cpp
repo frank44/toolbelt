@@ -51,5 +51,8 @@ vector<i64> invFact = [] {
 }();
 
 i64 choose(int n, int k) {
+    if (k < 0 || k > n) {
+        return 0;
+    }
     return fact[n] * invFact[k] % MOD * invFact[n-k] % MOD;
 }
