@@ -213,10 +213,10 @@ def run_test_cases(src_file, input_file='input.txt', output_file='output.txt', s
         with open('temp_input.txt', 'r') as infile:
             if compare:
                 # keep stdout clean for comparison; debug (stderr) shown separately
-                run_result = subprocess.run(run_cmd, stdin=infile, text=True, capture_output=True)
+                run_result = subprocess.run(run_cmd, stdin=infile, text=True, errors='replace', capture_output=True)
             else:
                 # merge stderr into stdout so debug interleaves with output in program order
-                run_result = subprocess.run(run_cmd, stdin=infile, text=True,
+                run_result = subprocess.run(run_cmd, stdin=infile, text=True, errors='replace',
                                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         end_time = time.time()
         execution_time = end_time - start_time
