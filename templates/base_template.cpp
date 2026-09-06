@@ -27,7 +27,7 @@ template<class T, class C> void dbg(stack<T,C> s) { cout << "{"; int i = 0; whil
 template<class T, class C> void dbg(queue<T,C> q) { cout << "{"; int i = 0; while (!q.empty()) { cout << (i++ ? ", " : ""); dbg(q.front()); q.pop(); } cout << "}"; }
 template<class T, class C, class P> void dbg(priority_queue<T,C,P> q) { cout << "{"; int i = 0; while (!q.empty()) { cout << (i++ ? ", " : ""); dbg(q.top()); q.pop(); } cout << "}"; }
 template<class... T> void dbg_all(const T&... x) { int i = 0; ((cout << (i++ ? ", " : ""), dbg(x)), ...); }
-#define debug(...) cout << "[" << #__VA_ARGS__ << "] = ", dbg_all(__VA_ARGS__), cout << "\n"
+#define debug(...) cout << "[" << #__VA_ARGS__ << "] = ", dbg_all(__VA_ARGS__), cout << endl
 #else
 #define debug(...)
 #endif
