@@ -26,8 +26,35 @@ template<class T> void dbg(const T& x) {
 template<class T, class C> void dbg(stack<T,C> s) { cout << "{"; int i = 0; while (!s.empty()) { cout << (i++ ? ", " : ""); dbg(s.top()); s.pop(); } cout << "}"; }
 template<class T, class C> void dbg(queue<T,C> q) { cout << "{"; int i = 0; while (!q.empty()) { cout << (i++ ? ", " : ""); dbg(q.front()); q.pop(); } cout << "}"; }
 template<class T, class C, class P> void dbg(priority_queue<T,C,P> q) { cout << "{"; int i = 0; while (!q.empty()) { cout << (i++ ? ", " : ""); dbg(q.top()); q.pop(); } cout << "}"; }
-template<class... T> void dbg_all(const T&... x) { int i = 0; ((cout << (i++ ? ", " : ""), dbg(x)), ...); }
-#define debug(...) cout << "[" << #__VA_ARGS__ << "] = ", dbg_all(__VA_ARGS__), cout << endl
+inline vector<string> dbg_names(const char* s) { // split #__VA_ARGS__ at top-level commas
+    vector<string> out; string cur; int depth = 0; bool quoted = false;
+    for (const char* p = s; *p; p++) {
+        if (*p == '"' && (p == s || p[-1] != '\\')) quoted = !quoted;
+        if (!quoted) {
+            if (strchr("([{", *p)) depth++;
+            if (strchr(")]}", *p)) depth--;
+            if (*p == ',' && depth == 0) { out.push_back(cur); cur.clear(); if (p[1] == ' ') p++; continue; }
+        }
+        cur += *p;
+    }
+    out.push_back(cur);
+    return out;
+}
+// debug(...) prints args left to right: string literals plainly (flavor text), everything else as name = value.
+// e.g. debug("phase 2", i, fixed) -> phase 2 i = 4, fixed = {0, 7}
+template<class... T> void dbg_all(const char* names, const T&... x) {
+    auto ns = dbg_names(names);
+    int i = 0; bool prevText = false;
+    auto one = [&](const auto& v) {
+        constexpr bool text = is_convertible_v<remove_cvref_t<decltype(v)>, const char*>;
+        if (i) cout << (text || prevText ? " " : ", ");
+        if constexpr (text) cout << v;
+        else { cout << ns[i] << " = "; dbg(v); }
+        prevText = text; i++;
+    };
+    (one(x), ...);
+}
+#define debug(...) dbg_all(#__VA_ARGS__, __VA_ARGS__), cout << endl
 #else
 #define debug(...)
 #endif
