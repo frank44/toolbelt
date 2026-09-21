@@ -13,13 +13,23 @@ CPP_FLAGS = [
     '-std=c++23', '-O2', '-g',
     '-DLOCAL',
     '-Wall', '-Wextra', '-Wshadow',
+    '-Wduplicated-cond', '-Wduplicated-branches', '-Wlogical-op',
+    '-Wfloat-equal',
     '-D_GLIBCXX_ASSERTIONS',
     '-Winvalid-pch',
+    '-fdiagnostics-color=always',    # runner captures output via pipe; keep colors
+    '-fmax-errors=3',
     # --- debug/sanitizer flags (local only; never ship to CF) ---
     '-fsanitize=address,undefined',  # catch OOB/UAF + UB (signed overflow, etc.)
+    '-fsanitize=float-divide-by-zero,float-cast-overflow',
     '-fno-sanitize-recover=all',     # abort + nonzero exit on first error, so a test FAILS
     '-fno-omit-frame-pointer',       # readable stack traces in sanitizer reports
     '-D_GLIBCXX_DEBUG',              # bounds-check vector::operator[], catch bad iterators
+]
+
+# Link-only flags: must NOT be passed to the PCH build (-Wl forces a link step there)
+CPP_LINK_FLAGS = [
+    '-Wl,-stack_size,0x20000000',    # 512MB stack (macOS): match CF's deep-recursion headroom
 ]
 
 # ===== Precompiled-header cache (auto-managed, full <bits/stdc++.h>) =====
@@ -152,7 +162,7 @@ def java_strategy(src):
 def cpp_strategy(src):
     binary = os.path.splitext(os.path.basename(src))[0]
     pch_inc = ensure_pch(CPP_COMPILER, CPP_FLAGS)
-    compile_cmd = [CPP_COMPILER] + CPP_FLAGS + pch_inc + [src, '-o', binary, '-lstdc++exp']
+    compile_cmd = [CPP_COMPILER] + CPP_FLAGS + CPP_LINK_FLAGS + pch_inc + [src, '-o', binary, '-lstdc++exp']
     run_cmd = [f'./{binary}']
 
     def cleanup():
