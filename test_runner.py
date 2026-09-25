@@ -7,6 +7,10 @@ import re
 import shutil
 import hashlib
 
+# Kill a case that runs longer than this (infinite loop / runaway recursion) and report TLE.
+# The sanitizer build is ~2-3x slower than a judge, so this is deliberately loose.
+TIME_LIMIT_S = 10
+
 # ===== C++ compiler config (edit here) =====
 CPP_COMPILER = 'g++-16'
 CPP_FLAGS = [
@@ -213,17 +217,30 @@ def run_test_cases(src_file, input_file='input.txt', output_file='output.txt', s
 
         start_time = time.time()
         with open('temp_input.txt', 'r') as infile:
-            if compare:
-                # keep stdout clean for comparison; sanitizer reports (stderr) shown separately
-                run_result = subprocess.run(run_cmd, stdin=infile, text=True, errors='replace', capture_output=True)
-            else:
-                # merge stderr into stdout so sanitizer reports interleave with output in program order
-                run_result = subprocess.run(run_cmd, stdin=infile, text=True, errors='replace',
-                                            stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            try:
+                if compare:
+                    # keep stdout clean for comparison; sanitizer reports (stderr) shown separately
+                    run_result = subprocess.run(run_cmd, stdin=infile, text=True, errors='replace',
+                                                capture_output=True, timeout=TIME_LIMIT_S)
+                else:
+                    # merge stderr into stdout so sanitizer reports interleave with output in program order
+                    run_result = subprocess.run(run_cmd, stdin=infile, text=True, errors='replace',
+                                                stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=TIME_LIMIT_S)
+            except subprocess.TimeoutExpired as e:
+                run_result = None
+                partial = e.stdout or b''  # bytes even with text=True
+                if isinstance(partial, bytes):
+                    partial = partial.decode(errors='replace')
         end_time = time.time()
         execution_time = end_time - start_time
 
-        if run_result.returncode != 0:
+        if run_result is None:
+            print(f"{RED}{BOLD}Time Limit Exceeded in Test Case {i+1} (killed after {TIME_LIMIT_S}s){RESET}")
+            if partial.strip():
+                print("  Output before kill:")
+                print(partial.strip())
+            all_tests_passed = False
+        elif run_result.returncode != 0:
             print(f"{RED}{BOLD}Runtime Error in Test Case {i+1} (exit {run_result.returncode}):{RESET}")
             if run_result.stdout:
                 print(run_result.stdout)
@@ -271,9 +288,11 @@ def run_test_cases(src_file, input_file='input.txt', output_file='output.txt', s
     cleanup()
 
 
-if len(sys.argv) not in [2, 3, 4]:
-    print("Usage: python3 test_runner.py [SourceFile.cpp] [optional: specific test case number] [optional: 'c' to compare]")
+# Options after the source file may come in any order: a case number, and/or 'c' to compare.
+opts = sys.argv[2:]
+bad = [a for a in opts if not (a.isdigit() or a == 'c')]
+if len(sys.argv) < 2 or bad:
+    print("Usage: python3 test_runner.py SourceFile.cpp [case number] [c]   (options in any order)")
 else:
-    specific_case = int(sys.argv[2]) if len(sys.argv) >= 3 and sys.argv[2].isdigit() else None
-    compare = 'c' in sys.argv
-    run_test_cases(sys.argv[1], specific_case=specific_case, compare=compare)
+    specific_case = next((int(a) for a in opts if a.isdigit()), None)
+    run_test_cases(sys.argv[1], specific_case=specific_case, compare='c' in opts)

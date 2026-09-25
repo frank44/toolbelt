@@ -28,13 +28,15 @@ template<class T> void dbg(const T& x) {
 template<class T, class C> void dbg(stack<T,C> s) { cout << "{"; int i = 0; while (!s.empty()) { cout << (i++ ? ", " : ""); dbg(s.top()); s.pop(); } cout << "}"; }
 template<class T, class C> void dbg(queue<T,C> q) { cout << "{"; int i = 0; while (!q.empty()) { cout << (i++ ? ", " : ""); dbg(q.front()); q.pop(); } cout << "}"; }
 template<class T, class C, class P> void dbg(priority_queue<T,C,P> q) { cout << "{"; int i = 0; while (!q.empty()) { cout << (i++ ? ", " : ""); dbg(q.top()); q.pop(); } cout << "}"; }
-inline vector<string> dbg_names(const char* s) { // split #__VA_ARGS__ at top-level commas
+// split #__VA_ARGS__ at top-level commas. angle=true also nests on <> (for vector<pair<int,int>>{...});
+// dbg_all retries with angle=false if that yields the wrong arg count (e.g. debug(a < b, c > d))
+inline vector<string> dbg_names(const char* s, bool angle) {
     vector<string> out; string cur; int depth = 0; bool quoted = false;
     for (const char* p = s; *p; p++) {
         if (*p == '"' && (p == s || p[-1] != '\\')) quoted = !quoted;
         if (!quoted) {
-            if (strchr("([{", *p)) depth++;
-            if (strchr(")]}", *p)) depth--;
+            if (strchr(angle ? "([{<" : "([{", *p)) depth++;
+            if (strchr(angle ? ")]}>" : ")]}", *p)) depth--;
             if (*p == ',' && depth == 0) { out.push_back(cur); cur.clear(); if (p[1] == ' ') p++; continue; }
         }
         cur += *p;
@@ -45,7 +47,8 @@ inline vector<string> dbg_names(const char* s) { // split #__VA_ARGS__ at top-le
 // debug(...) prints args left to right: string literals plainly (flavor text), everything else as name = value.
 // e.g. debug("phase 2", i, fixed) -> phase 2 i = 4, fixed = {0, 7}
 template<class... T> void dbg_all(const char* names, const T&... x) {
-    auto ns = dbg_names(names);
+    auto ns = dbg_names(names, true);
+    if (ns.size() != sizeof...(T)) ns = dbg_names(names, false);
     int i = 0; bool prevText = false;
     auto one = [&](const auto& v) {
         constexpr bool text = is_convertible_v<remove_cvref_t<decltype(v)>, const char*>;
