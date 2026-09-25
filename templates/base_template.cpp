@@ -4,7 +4,6 @@ using namespace std;
 using i64 = long long;
 using i128 = __int128;
 
-// #define LOCAL // LeetCode has no -DLOCAL: uncomment to enable debug/trace there, re-comment to submit
 #ifdef LOCAL
 template<class T> void dbg(const T& x);
 inline void dbg(i128 x) { if (x < 0) { cout << '-'; x = -x; } string s; do { s += char('0' + int(x % 10)); x /= 10; } while (x); reverse(s.begin(), s.end()); cout << s; }

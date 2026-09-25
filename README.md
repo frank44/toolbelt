@@ -83,7 +83,7 @@ Rules:
 - `trace_depth(k);` traces only the top `k` call levels (for `fib(40)`-sized trees).
 - Lambdas print as `λ` (they have no `__func__` name). Recursive lambdas work fine. `trace()` with no args prints `fn()`.
 - Leave the calls in when you submit: without `LOCAL`, `debug`/`trace`/`tret`/`trace_depth` compile to nothing.
-- On LeetCode there's no `-DLOCAL`, so paste the whole `#ifdef LOCAL … #endif` block and use the toggle line above it: uncomment `#define LOCAL` to debug, comment it out again before submitting. One line flips everything.
+- On LeetCode there's no `-DLOCAL`: paste the whole `#ifdef LOCAL … #endif` block and add `#define LOCAL` above it to debug; delete that line before submitting.
 
 After editing the template, regenerate the snippet (never edit `cpp.json` by hand):
 
