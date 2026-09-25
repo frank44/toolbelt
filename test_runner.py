@@ -11,7 +11,6 @@ import hashlib
 CPP_COMPILER = 'g++-16'
 CPP_FLAGS = [
     '-std=c++23', '-O2', '-g',
-    '-DLOCAL',
     '-Wall', '-Wextra', '-Wshadow',
     '-Wduplicated-cond', '-Wduplicated-branches', '-Wlogical-op',
     '-Wfloat-equal',
@@ -26,6 +25,11 @@ CPP_FLAGS = [
     '-fno-omit-frame-pointer',       # readable stack traces in sanitizer reports
     '-D_GLIBCXX_DEBUG',              # bounds-check vector::operator[], catch bad iterators
 ]
+
+# Enables the template's debug()/trace(). Compare mode is the pre-submit check, so it
+# builds WITHOUT this: debug output vanishes exactly as on the judge and stdout matches
+# output.txt. Kept out of CPP_FLAGS so the PCH (which never reads LOCAL) is valid for both.
+CPP_LOCAL_FLAGS = ['-DLOCAL']
 
 # Link-only flags: must NOT be passed to the PCH build (-Wl forces a link step there)
 CPP_LINK_FLAGS = [
@@ -147,7 +151,7 @@ def highlight_differences(expected_output, actual_output):
 # ===== Per-language strategy =====
 # Each builder returns (compile_cmd_or_None, run_cmd, cleanup_fn)
 
-def java_strategy(src):
+def java_strategy(src, compare=False):
     cls = os.path.splitext(os.path.basename(src))[0]
     compile_cmd = ['javac', '-g', src]
     run_cmd = ['java', cls]
@@ -159,10 +163,11 @@ def java_strategy(src):
     return compile_cmd, run_cmd, cleanup
 
 
-def cpp_strategy(src):
+def cpp_strategy(src, compare=False):
     binary = os.path.splitext(os.path.basename(src))[0]
     pch_inc = ensure_pch(CPP_COMPILER, CPP_FLAGS)
-    compile_cmd = [CPP_COMPILER] + CPP_FLAGS + CPP_LINK_FLAGS + pch_inc + [src, '-o', binary, '-lstdc++exp']
+    flags = CPP_FLAGS + ([] if compare else CPP_LOCAL_FLAGS)
+    compile_cmd = [CPP_COMPILER] + flags + CPP_LINK_FLAGS + pch_inc + [src, '-o', binary, '-lstdc++exp']
     run_cmd = [f'./{binary}']
 
     def cleanup():
@@ -192,7 +197,7 @@ def run_test_cases(src_file, input_file='input.txt', output_file='output.txt', s
         print(f"{RED}{BOLD}Unsupported file type '{ext}'. Supported: {', '.join(STRATEGIES)}{RESET}")
         return
 
-    compile_cmd, run_cmd, cleanup = STRATEGIES[ext](src_file)
+    compile_cmd, run_cmd, cleanup = STRATEGIES[ext](src_file, compare)
     all_tests_passed = True
 
     with open(input_file, 'r') as file:
@@ -222,10 +227,10 @@ def run_test_cases(src_file, input_file='input.txt', output_file='output.txt', s
         start_time = time.time()
         with open('temp_input.txt', 'r') as infile:
             if compare:
-                # keep stdout clean for comparison; debug (stderr) shown separately
+                # keep stdout clean for comparison; sanitizer reports (stderr) shown separately
                 run_result = subprocess.run(run_cmd, stdin=infile, text=True, errors='replace', capture_output=True)
             else:
-                # merge stderr into stdout so debug interleaves with output in program order
+                # merge stderr into stdout so sanitizer reports interleave with output in program order
                 run_result = subprocess.run(run_cmd, stdin=infile, text=True, errors='replace',
                                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         end_time = time.time()
