@@ -13,7 +13,7 @@ template<class T> constexpr bool dbg_printable = requires(const T& t) { cout << 
 template<class T> constexpr bool dbg_iterable = requires(const T& t) { begin(t); end(t); };
 inline int dbg_depth = 0; // indent level for nested multi-line containers
 inline int dbg_rec = 0, dbg_max_rec = 1e9; // trace() call depth; trace_depth(k) traces only the top k levels
-inline string dbg_pre() { string s; for (int d = 1; d < dbg_rec; d++) s += "| "; return s; } // trace indent prefix
+inline string dbg_pre() { string s; for (int d = 1; d < dbg_rec; d++) s += "\u2502 "; return s; } // trace indent prefix
 template<class T> void dbg(const T& x) {
     if constexpr (dbg_printable<T>) { cout << x; }
     else {
@@ -44,14 +44,7 @@ inline vector<string> dbg_names(const char* s) { // split #__VA_ARGS__ at top-le
 }
 // debug(...) prints args left to right: string literals plainly (flavor text), everything else as name = value.
 // e.g. debug("phase 2", i, fixed) -> phase 2 i = 4, fixed = {0, 7}
-// recursion tracing: trace(args) on entry, tret(val) right before each return. Each call's lines share one indent.
-inline bool dbg_on() { return dbg_rec <= dbg_max_rec; }
-struct dbg_frame { dbg_frame() { dbg_rec++; } ~dbg_frame() { dbg_rec--; } };
-inline const char* dbg_fn(const char* f) { return strcmp(f, "operator()") ? f : "λ"; } // lambdas have no name
-inline void dbg_ret() {}
-template<class T> void dbg_ret(const T& v) { cout << ' '; dbg(v); }
 template<class... T> void dbg_all(const char* names, const T&... x) {
-    cout << dbg_pre();
     auto ns = dbg_names(names);
     int i = 0; bool prevText = false;
     auto one = [&](const auto& v) {
@@ -61,13 +54,30 @@ template<class... T> void dbg_all(const char* names, const T&... x) {
         else { cout << ns[i] << " = "; dbg(v); }
         prevText = text; i++;
     };
-    (one(x), ...);
+    (one(x), ...); (void)one; // trace() may pass zero args
 }
-#define debug(...) (dbg_on() ? (dbg_all(#__VA_ARGS__, __VA_ARGS__), cout << endl, 0) : 0)
+#define debug(...) (dbg_on() ? (cout << dbg_pre(), dbg_all(#__VA_ARGS__, __VA_ARGS__), cout << endl, 0) : 0)
+// recursion tracing: trace(args) on entry, tret(val) right before each return.
+//   dfs(u = 1, d = 1)          <- trace
+//   \u2502 dfs(u = 3, d = 2)        <- nested call, one level deeper
+//   \u2502 \u2514 dfs(u = 3, d = 2) = 1  <- its tret
+//   \u2514 dfs(u = 1, d = 1) = 2
+inline bool dbg_on() { return dbg_rec <= dbg_max_rec; }
+inline vector<string> dbg_calls; // entry text of every active trace(), so tret can name the call it closes
+inline const char* dbg_fn(const char* f) { return strcmp(f, "operator()") ? f : "\u03bb"; } // lambdas have no name
+template<class... T> string dbg_str(const char* names, const T&... x) { // dbg_all's output as a string
+    ostringstream o; auto* old = cout.rdbuf(o.rdbuf()); dbg_all(names, x...); cout.rdbuf(old); return o.str();
+}
+struct dbg_frame {
+    dbg_frame(string call) { dbg_rec++; dbg_calls.push_back(move(call)); if (dbg_on()) cout << dbg_pre() << dbg_calls.back() << endl; }
+    ~dbg_frame() { dbg_rec--; dbg_calls.pop_back(); }
+};
+inline void dbg_ret() {}
+template<class T> void dbg_ret(const T& v) { cout << " = "; dbg(v); }
 #define DBG_CAT(a, b) a##b
-#define DBG_GUARD(n) DBG_CAT(dbg_guard_, n) // unique per line so a traced lambda inside a traced fn doesn't -Wshadow
-#define trace(...) dbg_frame DBG_GUARD(__LINE__); debug(dbg_fn(__func__), __VA_ARGS__)
-#define tret(...) (dbg_on() ? (cout << dbg_pre(), cout << "->", dbg_ret(__VA_ARGS__), cout << endl, 0) : 0)
+#define DBG_GUARD(n) DBG_CAT(dbg_guard_, n) // unique name so a traced lambda inside a traced fn doesn't -Wshadow
+#define trace(...) dbg_frame DBG_GUARD(__COUNTER__)(string(dbg_fn(__func__)) + "(" + dbg_str(#__VA_ARGS__ __VA_OPT__(,) __VA_ARGS__) + ")")
+#define tret(...) (dbg_on() ? (cout << dbg_pre() << "\u2514 " << dbg_calls.back(), dbg_ret(__VA_ARGS__), cout << endl, 0) : 0)
 #define trace_depth(k) dbg_max_rec = (k)
 #else
 #define debug(...)

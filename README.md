@@ -50,7 +50,7 @@ debug("phase 2", i, fixed);   // phase 2 i = 4, fixed = {0, 7}
 
 ### 🌳 `trace(...)` / `tret(...)` — recursion tracing
 
-Call `trace(args)` on entry and `tret(val)` (or bare `tret()` for `void`) right before each `return`. Every line a call prints — its entry, any `debug(...)` inside it, and its `->` return — shares one indent, so you can see which call returned what:
+Call `trace(args)` on entry and `tret(val)` (or bare `tret()` for `void`) right before each `return`. Each call prints its entry as `fn(args)`, and its `tret` closes it with `└ fn(args) = value`, so returns are matched to their call by name, not just by indent. Any `debug(...)` inside the call is indented to match:
 
 ```cpp
 int dfs(int u, int d) {
@@ -65,23 +65,23 @@ int dfs(int u, int d) {
 }
 ```
 ```
-dfs u = 0, d = 0
-| dfs u = 1, d = 1
-| | dfs u = 3, d = 2
-| | -> 1
-| after child v = 3, sz = 2
-| -> 2
+dfs(u = 0, d = 0)
+│ dfs(u = 1, d = 1)
+│ │ dfs(u = 3, d = 2)
+│ │ └ dfs(u = 3, d = 2) = 1
+│ after child v = 3, sz = 2
+│ └ dfs(u = 1, d = 1) = 2
 after child v = 1, sz = 3
-| dfs u = 2, d = 1
-| -> 1
+│ dfs(u = 2, d = 1)
+│ └ dfs(u = 2, d = 1) = 1
 after child v = 2, sz = 4
--> 4
+└ dfs(u = 0, d = 0) = 4
 ```
 
 Rules:
 - `tret` is its own statement — it never wraps the return value. Call it on the line before the `return`.
 - `trace_depth(k);` traces only the top `k` call levels (for `fib(40)`-sized trees).
-- Lambdas print as `λ` (they have no `__func__` name). Recursive lambdas work fine.
+- Lambdas print as `λ` (they have no `__func__` name). Recursive lambdas work fine. `trace()` with no args prints `fn()`.
 - Leave the calls in when you submit: without `LOCAL`, `debug`/`trace`/`tret`/`trace_depth` compile to nothing. On LeetCode, paste these above your class:
 
 ```cpp
