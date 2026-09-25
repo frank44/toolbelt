@@ -58,8 +58,8 @@ int dfs(int u, int d) {
     int sz = 1;
     for (int v : g[u]) {
         sz += dfs(v, d + 1);
+        debug("after child", v, sz);
     }
-    debug("leaving", g[u]);
     tret(sz);
     return sz;
 }
@@ -68,11 +68,13 @@ int dfs(int u, int d) {
 dfs u = 0, d = 0
 | dfs u = 1, d = 1
 | | dfs u = 3, d = 2
-| | leaving g[u] = {}
 | | -> 1
-| leaving g[u] = {3}
+| after child v = 3, sz = 2
 | -> 2
-leaving g[u] = {1, 2}
+after child v = 1, sz = 3
+| dfs u = 2, d = 1
+| -> 1
+after child v = 2, sz = 4
 -> 4
 ```
 
