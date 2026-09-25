@@ -56,9 +56,12 @@ Call `trace(args)` on entry and `tret(val)` (or bare `tret()` for `void`) right 
 int dfs(int u, int d) {
     trace(u, d);
     int sz = 1;
-    for (int v : g[u]) sz += dfs(v, d + 1);
+    for (int v : g[u]) {
+        sz += dfs(v, d + 1);
+    }
     debug("leaving", g[u]);
-    tret(sz); return sz;
+    tret(sz);
+    return sz;
 }
 ```
 ```
@@ -74,7 +77,7 @@ leaving g[u] = {1, 2}
 ```
 
 Rules:
-- `tret` is its own statement — it never wraps the return value. Write `tret(x); return x;`.
+- `tret` is its own statement — it never wraps the return value. Call it on the line before the `return`.
 - `trace_depth(k);` traces only the top `k` call levels (for `fib(40)`-sized trees).
 - Lambdas print as `λ` (they have no `__func__` name). Recursive lambdas work fine.
 - Leave the calls in when you submit: without `LOCAL`, `debug`/`trace`/`tret`/`trace_depth` compile to nothing. On LeetCode, paste these above your class:
