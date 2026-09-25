@@ -151,18 +151,6 @@ def highlight_differences(expected_output, actual_output):
 # ===== Per-language strategy =====
 # Each builder returns (compile_cmd_or_None, run_cmd, cleanup_fn)
 
-def java_strategy(src, compare=False):
-    cls = os.path.splitext(os.path.basename(src))[0]
-    compile_cmd = ['javac', '-g', src]
-    run_cmd = ['java', cls]
-
-    def cleanup():
-        for f in glob.glob('*.class'):
-            os.remove(f)
-
-    return compile_cmd, run_cmd, cleanup
-
-
 def cpp_strategy(src, compare=False):
     binary = os.path.splitext(os.path.basename(src))[0]
     pch_inc = ensure_pch(CPP_COMPILER, CPP_FLAGS)
@@ -183,7 +171,6 @@ def cpp_strategy(src, compare=False):
 
 
 STRATEGIES = {
-    '.java': java_strategy,
     '.cpp': cpp_strategy,
     '.cc': cpp_strategy,
     '.cxx': cpp_strategy,
@@ -285,7 +272,7 @@ def run_test_cases(src_file, input_file='input.txt', output_file='output.txt', s
 
 
 if len(sys.argv) not in [2, 3, 4]:
-    print("Usage: python3 test_runner.py [SourceFile.java|.cpp] [optional: specific test case number] [optional: 'c' to compare]")
+    print("Usage: python3 test_runner.py [SourceFile.cpp] [optional: specific test case number] [optional: 'c' to compare]")
 else:
     specific_case = int(sys.argv[2]) if len(sys.argv) >= 3 and sys.argv[2].isdigit() else None
     compare = 'c' in sys.argv

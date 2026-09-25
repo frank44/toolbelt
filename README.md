@@ -1,6 +1,6 @@
 # 🧰 toolbelt
 
-Personal competitive programming kit: a fast local test runner, a C++ contest template with a VS Code snippet, and a library of prewritten algorithms and data structures.
+Personal competitive programming kit: a fast local C++ test runner, a contest template with a VS Code snippet, and a library of prewritten algorithms and data structures.
 
 ## 🗂️ Layout
 
@@ -34,7 +34,7 @@ Under the hood 🔧:
 - Defines `LOCAL` to enable the template's `debug(...)`/`trace(...)` macros — except in compare mode, which builds without it so the output diff sees exactly what the judge will
 - Times each case and cleans up binaries afterward
 
-Also runs Java (`.java`). Compiler and flags are configured at the top of [test_runner.py](test_runner.py).
+Compiler and flags are configured at the top of [test_runner.py](test_runner.py).
 
 ## 📝 Template & snippet
 
