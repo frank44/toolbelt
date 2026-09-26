@@ -18,7 +18,7 @@ using namespace std;
                         (duplicates counted, so insert("a") twice -> 2).
         - prefixCount = number of inserted words passing through a node.
         - insert / find / count* / contains work relative to whichever node you
-          call them on. erase and size are ROOT-ONLY.
+          call them on. erase, size and clear are ROOT-ONLY.
         - erase removes ONE occurrence and frees any branch whose prefixCount
           drops to 0.
         - size() == root prefixCount == total words currently stored.
@@ -31,6 +31,7 @@ using namespace std;
         int  w  = t.countWord("apple");     // how many times "apple" was inserted
         int  p  = t.countPrefix("app");     // how many words start with "app"
         t.erase("apple");                   // returns false if word wasn't present
+        t.clear();                          // remove everything, free all nodes
         Trie<>* node = t.find("app");       // node for "app", or nullptr
         debug(t);                           // indented dump via toString()
 
@@ -124,6 +125,16 @@ struct Trie {
     // ROOT-ONLY. Total number of words currently stored (with multiplicity).
     int size() const {
         return prefixCount;
+    }
+
+    // ROOT-ONLY. Remove every word and free all nodes.
+    void clear() {
+        for (Trie*& c : child) {  // reference: the null-out must write back into the array
+            delete c;
+            c = nullptr;
+        }
+        wordCount = 0;
+        prefixCount = 0;
     }
 
     // Indented dump of the subtree rooted here, one node per line. No trailing newline.
