@@ -41,7 +41,7 @@ auto init = []() {
             pals.push_back(p);
         }
     }
-    ranges::sort(pals);
+    sort(pals.begin(), pals.end());
     return 0;
 }();
 

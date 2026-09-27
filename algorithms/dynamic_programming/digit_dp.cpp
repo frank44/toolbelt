@@ -26,7 +26,7 @@ public:
             digits.push_back(num%10);
             num /= 10;
         }
-        ranges::reverse(digits); 
+        reverse(digits.begin(), digits.end());
         int n = digits.size();
 
         // i = n, position, [0, n-1] (0 is highest ordered digit)
