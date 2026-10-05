@@ -2,21 +2,17 @@
 using namespace std;
 
 /*
-    Kahn's algorithm: topological order of a directed graph, O(n + m).
+    Kahn's algorithm: topological order of a directed graph, O(n + m)
 
-    Returns the vertices in an order where every edge u -> v has u before v.
+    Returns the vertices in an order where every edge u -> v has u before v
+
     If g has a cycle the order is partial: order.size() < n, and the missing
     vertices are exactly the ones on a cycle or reachable from one
-    (self-loops and parallel edges are handled correctly).
 
     Notes:
         - Lexicographically smallest order: swap the queue for
-              priority_queue<int, vector<int>, greater<int>> q;
-          (O((n + m) log n)). Careful: "smallest label as early as possible"
-          is a different problem (reverse graph + max-heap, then reverse).
-        - Iterative, so no recursion depth issues on n = 1e6.
-        - For a DFS-based order see pass 1 of kosaraju_sccs.cpp
-          (reverse post-order is a topological order when g is a DAG).
+              priority_queue / min-heap
+        - Iterative, so no recursion depth issues on n = 1e6
 
     Usage:
         auto order = topologicalSort(g);

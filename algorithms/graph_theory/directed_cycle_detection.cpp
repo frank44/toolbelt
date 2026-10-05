@@ -4,15 +4,14 @@ using namespace std;
 /*
     Cycle detection in a DIRECTED graph by 3-color DFS, O(n + m).
     A cycle exists iff the DFS finds a back edge: an edge u -> v with v
-    still on the recursion stack (state 1).
+    still on the recursion stack (state 1)
 
     Notes:
         - Directed only. On an undirected adjacency list every edge u-v is
           also v-u, so this reports a cycle everywhere; use UnionFind there
-          (unite() returning false means a cycle).
         - topologicalSort(g).size() < n gives the same answer iteratively
-          (no recursion depth concerns).
-        - Self-loops and parallel edges are handled.
+          (no recursion depth concerns)
+        - Self-loops and parallel edges are handled
 
     Usage:
         if (hasCycle(g)) { ... }
