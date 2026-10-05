@@ -48,6 +48,8 @@ Pretty-prints pairs, tuples, nested containers, and even `__int128`. String lite
 debug("phase 2", i, fixed);   // phase 2 i = 4, fixed = {0, 7}
 ```
 
+`string` values print quoted (`s = ""` vs `s = " "`) and `char`s as `'c'` — non-printable chars print as their int value, so `vector<char>` flags show as `{0, 1, 0}`.
+
 ### 🌳 `trace(...)` / `tret(...)` — recursion tracing
 
 Call `trace(args)` on entry. Each call prints its entry as `fn(args)` and closes itself with `└ fn(args)` when it returns — by any path, so multiple `return`s need nothing extra. Add `tret(val)` right before a `return` when you also want the value shown (`└ fn(args) = value`). Any `debug(...)` inside the call is indented to match:

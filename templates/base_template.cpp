@@ -7,6 +7,8 @@ using i128 = __int128;
 #ifdef LOCAL
 template<class T> void dbg(const T& x);
 inline void dbg(i128 x) { if (x < 0) { cout << '-'; x = -x; } string s; do { s += char('0' + int(x % 10)); x /= 10; } while (x); reverse(s.begin(), s.end()); cout << s; }
+inline void dbg(const string& s) { cout << '"' << s << '"'; } // quoted so "" and " " are distinguishable
+inline void dbg(char c) { if (isprint((unsigned char)c)) { cout << '\'' << c << '\''; } else { cout << int(c); } } // vector<char> flags print as 0/1
 template<class A, class B> void dbg(const pair<A,B>& p) { cout << "("; dbg(p.first); cout << ", "; dbg(p.second); cout << ")"; }
 template<class... T> void dbg(const tuple<T...>& t) { cout << "("; apply([](auto&&... a){ int i = 0; ((cout << (i++ ? ", " : ""), dbg(a)), ...); }, t); cout << ")"; }
 template<class T> constexpr bool dbg_printable = requires(const T& t) { cout << t; };
