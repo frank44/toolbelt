@@ -28,6 +28,7 @@ CPP_FLAGS = [
     '-fno-sanitize-recover=all',     # abort + nonzero exit on first error, so a test FAILS
     '-fno-omit-frame-pointer',       # readable stack traces in sanitizer reports
     '-D_GLIBCXX_DEBUG',              # bounds-check vector::operator[], catch bad iterators
+    '-fno-inline',                   # one stack frame per call, so crash traces point at the exact line
 ]
 
 # Enables the template's debug()/trace(). Compare mode is the pre-submit check, so it
@@ -39,6 +40,15 @@ CPP_LOCAL_FLAGS = ['-DLOCAL']
 CPP_LINK_FLAGS = [
     '-Wl,-stack_size,0x20000000',    # 512MB stack (macOS): match CF's deep-recursion headroom
 ]
+
+# Runtime sanitizer options, so every crash comes with a symbolized stack trace:
+#   handle_abort=1     -> _GLIBCXX_DEBUG failures and assert() call abort(); have ASan trace that too
+#   dump_registers=0   -> drop the register dump noise from those reports
+#   print_stacktrace=1 -> UBSan reports (signed overflow, etc.) get a full trace, not just one line
+SANITIZER_ENV = {
+    'ASAN_OPTIONS': 'handle_abort=1:dump_registers=0',
+    'UBSAN_OPTIONS': 'print_stacktrace=1',
+}
 
 # ===== Precompiled-header cache (auto-managed, full <bits/stdc++.h>) =====
 PCH_DIR = os.path.expanduser('~/cp/pch')
@@ -152,6 +162,52 @@ def highlight_differences(expected_output, actual_output):
     return highlighted_output
 
 
+# A sanitizer stack frame; symbolized ones end in file:line, e.g.
+#   "    #3 0x0001022227e8 in get(std::vector<int>&, int) sol.cpp:5"
+FRAME_RE = re.compile(r'^\s*#\d+ 0x[0-9a-f]+ ')
+SRC_FRAME_RE = re.compile(r'^\s*#\d+ 0x[0-9a-f]+ in (.+) (\S+):(\d+)(?::\d+)?$')
+
+
+def short_func(name):
+    """'int solve()::'lambda'(auto&&, int)::operator()<...>(...)' -> 'solve lambda'; 'get(int)' -> 'get'."""
+    head, is_lambda, _ = name.partition("::'lambda'")
+    words = head.split('(')[0].split()
+    return (words[-1] if words else '?') + (' lambda' if is_lambda else '')
+
+
+def crash_site(report, src_file):
+    """Boil a sanitizer stack trace down to the frames in src_file (innermost first), with the source line."""
+    src_name = os.path.basename(src_file)
+    with open(src_file, 'r', errors='replace') as file:
+        src_lines = file.read().split('\n')
+    frames = []  # [line number, function, repeat count]
+    for line in report.split('\n'):
+        if not FRAME_RE.match(line):
+            if frames:
+                break  # only the first trace: later ones are where memory was allocated/freed
+            continue
+        m = SRC_FRAME_RE.match(line)
+        if not m or os.path.basename(m.group(2)) != src_name:
+            continue  # libstdc++ / libc frame
+        line_no, func = int(m.group(3)), short_func(m.group(1))
+        if frames and frames[-1][:2] == [line_no, func]:
+            frames[-1][2] += 1  # collapse recursion
+        else:
+            frames.append([line_no, func, 1])
+    if not frames:
+        return ""
+    rows = []
+    for line_no, func, count in frames:
+        code = src_lines[line_no - 1].strip() if 0 < line_no <= len(src_lines) else ''
+        rows.append((f"{src_name}:{line_no}", func + (f" x{count}" if count > 1 else ''), code))
+    loc_width = max(len(loc) for loc, _, _ in rows)
+    func_width = max(len(func) for _, func, _ in rows)
+    out = f"{RED}{BOLD}Crashed at {rows[0][0]}{RESET}  (innermost call first)\n"
+    for loc, func, code in rows:
+        out += f"  {BOLD}{loc.ljust(loc_width)}{RESET}  {func.ljust(func_width)}  {code}\n"
+    return out
+
+
 # ===== Per-language strategy =====
 # Each builder returns (compile_cmd_or_None, run_cmd, cleanup_fn)
 
@@ -208,6 +264,8 @@ def run_test_cases(src_file, input_file='input.txt', output_file='output.txt', s
         print(f"{BOLD}Compiler warnings:{RESET}\n{compile_result.stderr.strip()}")
         print("-" * 50)
 
+    run_env = os.environ | SANITIZER_ENV
+
     test_cases_to_run = range(len(input_cases)) if specific_case is None else [specific_case - 1]
 
     for i in test_cases_to_run:
@@ -221,11 +279,11 @@ def run_test_cases(src_file, input_file='input.txt', output_file='output.txt', s
                 if compare:
                     # keep stdout clean for comparison; sanitizer reports (stderr) shown separately
                     run_result = subprocess.run(run_cmd, stdin=infile, text=True, errors='replace',
-                                                capture_output=True, timeout=TIME_LIMIT_S)
+                                                capture_output=True, timeout=TIME_LIMIT_S, env=run_env)
                 else:
                     # merge stderr into stdout so sanitizer reports interleave with output in program order
                     run_result = subprocess.run(run_cmd, stdin=infile, text=True, errors='replace',
-                                                stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=TIME_LIMIT_S)
+                                                stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=TIME_LIMIT_S, env=run_env)
             except subprocess.TimeoutExpired as e:
                 run_result = None
                 partial = e.stdout or b''  # bytes even with text=True
@@ -246,6 +304,8 @@ def run_test_cases(src_file, input_file='input.txt', output_file='output.txt', s
                 print(run_result.stdout)
             if run_result.stderr:
                 print(run_result.stderr)
+            # Last thing printed, so the line number is right above the prompt.
+            print(crash_site((run_result.stdout or '') + (run_result.stderr or ''), src_file), end='')
             all_tests_passed = False
         else:
             output_correct = True
