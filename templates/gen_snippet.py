@@ -35,7 +35,7 @@ snippet = {
     "competitive programming base template": {
         "prefix": "cf",
         "body": body,
-        "description": "Base C++ template (debug macros + multitest main)",
+        "description": "Base C++ template (debug macros + single-test main)",
     }
 }
 

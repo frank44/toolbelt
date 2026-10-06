@@ -108,7 +108,7 @@ int main() {
     cin.tie(nullptr);
 
     int t = 1;
-    cin >> t;  // comment out for single-test problems
+    // cin >> t;  // uncomment for multi-test problems
     while (t--) {
         solve();
     }

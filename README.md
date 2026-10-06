@@ -7,7 +7,7 @@ Personal competitive programming kit: a fast local C++ test runner, a contest te
 ```
 test_runner.py            # compile + run a solution against sample cases
 templates/
-  base_template.cpp       # contest template (debug macros, multitest main)
+  base_template.cpp       # contest template (debug macros, single-test main)
   gen_snippet.py          # syncs the template into the VS Code "cf" snippet
 algorithms/               # DP, graph theory, math
 data_structures/          # Fenwick tree, sparse tables, trie, union-find, LCA, ...
@@ -38,7 +38,7 @@ Compiler and flags are configured at the top of [test_runner.py](test_runner.py)
 
 ## 📝 Template & snippet
 
-Type `cf` + Tab in any `.cpp` file to expand [base_template.cpp](templates/base_template.cpp): `i64`/`i128`, `ckmin`/`ckmax`, multitest `main`, and the debug macros below.
+Type `cf` + Tab in any `.cpp` file to expand [base_template.cpp](templates/base_template.cpp): `i64`/`i128`, `ckmin`/`ckmax`, single-test `main` (uncomment one line for multitest), and the debug macros below.
 
 ### 🐛 `debug(...)`
 
