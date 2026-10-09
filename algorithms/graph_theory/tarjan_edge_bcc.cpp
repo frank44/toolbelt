@@ -2,52 +2,37 @@
 using namespace std;
 
 /*
- * Tarjan: bridges + articulation points + 2-edge-connected components.
- *
- * Undirected graphs only. O(N + M).
- *
- * Tested with:
- *   https://leetcode.com/problems/critical-connections-in-a-network/
- *
- * Usage:
- *   Tarjan tj(n);
- *   for (int i = 0; i < m; i++) {
- *       int u, v; cin >> u >> v; --u; --v;
- *       tj.addEdge(u, v);
- *   }
- *   tj.build();
- *
- * After build():
- *   tj.isBridge[i]  // 1 iff input edge i is a bridge (size == #addEdge calls)
- *   tj.isArt[u]     // 1 iff vertex u is an articulation point
- *   tj.compId[u]    // 2-edge-connected component id of u
- *   tj.compCnt      // number of 2ECCs
- *
- * Contracting each 2ECC gives the bridge tree (nodes 0..compCnt-1, edges are the
- * bridges). Bridges and articulation points are the usual "removal disconnects
- * the graph" edges/vertices. For vertex-biconnected components (block-cut tree),
- * use a separate edge-stack DFS -- not computed here.
- *
- * Bridge tree recipe:
- *   vector<vector<int>> tree(compCnt);
- *   for (int i = 0; i < m; i++) {
- *       if (!isBridge[i]) { continue; }
- *       int a = compId[to[2 * i]];
- *       int b = compId[to[2 * i + 1]];
- *       tree[a].push_back(b);
- *       tree[b].push_back(a);
- *   }
- *
- * Handles multi-edges and self-loops. build() resets per-run state, so it can
- * be called more than once. addEdge must be called before build().
- *
- * Two things to remember cold:
- *   - isBridge is indexed by input edge (0..m-1), not by directed edge.
- *     No 2*i at the call site.
- *   - to[2*i] / to[2*i+1] are the two endpoints of input edge i, in reverse
- *     of addEdge order. Only relevant if you build the bridge tree.
- */
-struct Tarjan {
+Tarjan: bridges + 2-edge-connected components + bridge tree.
+
+Undirected graphs only. O(N + M)
+
+Tested with:
+  https://leetcode.com/problems/critical-connections-in-a-network/
+
+Usage:
+  EdgeBCC eb(n);
+  for (int i = 0; i < m; i++) {
+      int u, v; cin >> u >> v;
+      eb.addEdge(u, v);
+  }
+  eb.build();
+
+After build():
+  eb.isBridge[i]   // 1 iff input edge i is a bridge (size == #addEdge calls)
+  eb.compId[u]     // 2-edge-connected component id of u
+  eb.compCnt       // number of 2ECCs
+  eb.bridgeTree()  // adjacency of the bridge tree (nodes 0..compCnt-1)
+
+The bridge tree: contract each 2ECC to a node; bridges become the tree edges.
+Always a tree. Common uses:
+  - Count leaves L; minimum edges to make the graph 2-edge-connected is
+    (L + 1) / 2. (CF 1000E)
+  - Tree DP / LCA on the condensed graph.
+
+Handles multi-edges and self-loops. build() resets per-run state, so it can
+be called more than once. addEdge must be called before build().
+*/
+struct EdgeBCC {
     int n;
     int timer;
     int compCnt;
@@ -56,11 +41,12 @@ struct Tarjan {
     vector<int> tin;
     vector<int> low;
     vector<int> compId;
+    vector<int> edgeU;         // one endpoint of each input edge
+    vector<int> edgeV;         // the other endpoint
     vector<char> isBridgeRaw;  // per directed edge, size 2*m
     vector<char> isBridge;     // per input edge, size m
-    vector<char> isArt;
 
-    explicit Tarjan(int numNodes) : n(numNodes), timer(0), compCnt(0) {
+    explicit EdgeBCC(int numNodes) : n(numNodes), timer(0), compCnt(0) {
         adj.assign(n, {});
         tin.assign(n, -1);
         low.assign(n, 0);
@@ -76,6 +62,8 @@ struct Tarjan {
         adj[u].push_back(dirId);
         to.push_back(u);
         adj[v].push_back(dirId ^ 1);
+        edgeU.push_back(u);
+        edgeV.push_back(v);
         return edgeId;
     }
 
@@ -88,11 +76,10 @@ struct Tarjan {
         compCnt = 0;
         isBridgeRaw.assign(to.size(), 0);
         isBridge.assign(m, 0);
-        isArt.assign(n, 0);
 
         for (int u = 0; u < n; u++) {
             if (tin[u] == -1) {
-                dfs(u, -1, true);
+                dfs(u, -1);
             }
         }
 
@@ -117,11 +104,27 @@ struct Tarjan {
         }
     }
 
-    void dfs(int u, int parentEdge, bool isRoot) {
+    // Adjacency of the bridge tree. Nodes are 0..compCnt-1 (2ECC ids), and
+    // edges are the bridges of the original graph.
+    vector<vector<int>> bridgeTree() const {
+        vector<vector<int>> tree(compCnt);
+        int m = (int)edgeU.size();
+        for (int i = 0; i < m; i++) {
+            if (!isBridge[i]) {
+                continue;
+            }
+            int a = compId[edgeU[i]];
+            int b = compId[edgeV[i]];
+            tree[a].push_back(b);
+            tree[b].push_back(a);
+        }
+        return tree;
+    }
+
+    void dfs(int u, int parentEdge) {
         tin[u] = timer;
         low[u] = timer;
         timer++;
-        int children = 0;
         for (int e : adj[u]) {
             if (e == parentEdge) {
                 continue;
@@ -130,21 +133,14 @@ struct Tarjan {
             if (tin[v] != -1) {
                 low[u] = min(low[u], tin[v]);
             } else {
-                dfs(v, e ^ 1, false);
+                dfs(v, e ^ 1);
                 low[u] = min(low[u], low[v]);
                 if (low[v] > tin[u]) {
                     isBridgeRaw[e] = 1;
                     isBridgeRaw[e ^ 1] = 1;
                     isBridge[e / 2] = 1;
                 }
-                if (!isRoot && low[v] >= tin[u]) {
-                    isArt[u] = 1;
-                }
-                children++;
             }
-        }
-        if (isRoot && children > 1) {
-            isArt[u] = 1;
         }
     }
 };
