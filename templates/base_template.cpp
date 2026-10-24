@@ -98,6 +98,7 @@ template<class T> bool ckmax(T& a, const T& b) { return a < b ? a = b, true : fa
 
 const i64 MOD = 1e9 + 7;
 const i64 INF = 1'000'000'000'000'000'000LL; // 1e18
+const double PI = acos(-1.0);
 
 void solve() {
 
