@@ -14,6 +14,10 @@
 # e.g. ~/AA_contests/cf_round_987_div_2/A/A.cpp, ~/AA_contests/ac_beginner_contest_380/C/C.cpp,
 #      ~/AA_contests/usaco_2024_december_contest_gold/1_cow_trip/1_cow_trip.cpp
 #
+# A new contest folder is opened in the current VS Code window (one window per contest) and gets
+# a .vscode/tasks.json: the default test task runs the active file in compare mode, the default
+# build task runs it with debug output. Each new solution opens as a tab.
+#
 # A folder that already exists is left alone (hand-added cases survive a re-parse);
 # delete it to fetch fresh samples. Then: run ~/AA_contests/<contest>/<problem>/<problem>.cpp c
 
@@ -28,11 +32,12 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 # ===== config (edit here) =====
 ROOT = os.path.expanduser(os.environ.get('CONTESTS_ROOT', '~/AA_contests'))
 PORT = 27121                        # in Competitive Companion's default port list; no extension config needed
-OPEN_CMD = ['code', '-r']           # opens each new solution in the current VS Code window; [] to disable
+OPEN_CMD = ['code', '-r']           # opens new contest folders and solutions in the current VS Code window; [] to disable
 JUDGE_SHORT = {'codeforces': 'cf', 'atcoder': 'ac', 'codechef': 'cc', 'usaco': 'usaco', 'leetcode': 'lc'}
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 TEMPLATE = os.path.join(HERE, 'templates', 'base_template.cpp')
+RUNNER = os.path.join(HERE, 'test_runner.py')
 MAX_BODY = 4 * 1024 * 1024
 
 
@@ -62,16 +67,33 @@ def problem_dir(name, has_contest, url):
     return slug(name) or (ids[-1] if ids else 'problem')
 
 
+def write_tasks(cdir):
+    """VS Code tasks for the contest folder: test = compare mode, build = debug run, both on the active file."""
+    run = f'python3 "{RUNNER}" "${{file}}"'  # plain python3: a versioned interpreter path breaks on the next upgrade
+    task = lambda label, cmd, kind: {'label': label, 'type': 'shell', 'command': cmd, 'problemMatcher': [],
+                                     'group': {'kind': kind, 'isDefault': True},
+                                     'presentation': {'clear': True, 'reveal': 'always', 'focus': False}}
+    tasks = {'version': '2.0.0', 'tasks': [task('test samples', run + ' c', 'test'), task('run with debug', run, 'build')]}
+    os.makedirs(os.path.join(cdir, '.vscode'), exist_ok=True)
+    with open(os.path.join(cdir, '.vscode', 'tasks.json'), 'w') as f:
+        json.dump(tasks, f, indent=4)
+
+
 def write_problem(p):
+    """Create the problem folder. Returns (solution path, contest dir if this call created it else None)."""
     group, name = p.get('group', ''), p.get('name', '')
     has_contest = ' - ' in group
     pname = problem_dir(name, has_contest, p.get('url', ''))
-    pdir = os.path.join(ROOT, contest_dir(group), pname)
+    cdir = os.path.join(ROOT, contest_dir(group))
+    pdir = os.path.join(cdir, pname)
     sol = os.path.join(pdir, pname + '.cpp')
     if os.path.exists(pdir):
         print(f"  exists, skipped: {pdir}")
-        return sol
+        return sol, None
+    new_contest = not os.path.exists(cdir)
     os.makedirs(pdir)
+    if new_contest:
+        write_tasks(cdir)
     tests = p.get('tests', [])
     sep = '\n~~~\n'
     with open(os.path.join(pdir, 'input.txt'), 'w') as f:
@@ -85,7 +107,7 @@ def write_problem(p):
     with open(sol, 'w') as f:
         f.write(header + body)
     print(f"  {pdir}  ({len(tests)} tests, {limits})")
-    return sol
+    return sol, cdir if new_contest else None
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -110,9 +132,10 @@ class Handler(BaseHTTPRequestHandler):
             return
         self.send_response(200); self.end_headers()
         print(f"{p['name']}  [{p.get('group', '')}]")
-        sol = write_problem(p)
+        sol, new_cdir = write_problem(p)
         if OPEN_CMD and shutil.which(OPEN_CMD[0]):
-            subprocess.run(OPEN_CMD + [sol])
+            # A new contest folder replaces the window's folder (one window per contest); the file opens as a tab.
+            subprocess.run(OPEN_CMD + ([new_cdir] if new_cdir else []) + [sol])
 
 
 if __name__ == '__main__':
