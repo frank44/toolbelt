@@ -6,6 +6,7 @@ Personal competitive programming kit: a fast local C++ test runner, a contest te
 
 ```
 test_runner.py            # compile + run a solution against sample cases
+cc_listen.py              # Competitive Companion listener: one click -> problem folder with samples
 templates/
   base_template.cpp       # contest template (debug macros, single-test main)
   gen_snippet.py          # syncs the template into the VS Code "cf" snippet
@@ -13,9 +14,29 @@ algorithms/               # DP, graph theory, math
 data_structures/          # Fenwick tree, sparse tables, trie, union-find, LCA, ...
 ```
 
+## 📥 Fetching problems
+
+Install the [Competitive Companion](https://github.com/jmerle/competitive-companion) browser extension, then leave this running during a contest:
+
+```bash
+python3 cc_listen.py
+```
+
+Click the extension icon on a problem page (or a contest page to grab every problem at once). Each problem becomes a folder under `~/cp/`:
+
+```
+~/cp/cf_round_987_div_2/A/sol.cpp     # base_template.cpp + a header comment: name, URL, time/memory limit
+                          input.txt   # sample inputs, ~~~ separated
+                          output.txt  # expected outputs, ~~~ separated
+~/cp/ac_beginner_contest_380/C/...
+~/cp/usaco_2024_december_contest_gold/1_cow_trip/...
+```
+
+Each new `sol.cpp` opens in VS Code. A folder that already exists is left alone, so hand-added cases survive a re-parse; delete it to fetch fresh samples. Port, root folder and the editor command are at the top of [cc_listen.py](cc_listen.py).
+
 ## 🚀 Test runner
 
-Put sample cases in `input.txt` (separate multiple cases with a `~~~` line), then:
+Sample cases live in `input.txt` next to the solution (separate multiple cases with a `~~~` line); `cc_listen.py` writes them for you, or add your own. Then, from any directory:
 
 ```bash
 python3 test_runner.py sol.cpp
