@@ -7,15 +7,15 @@
 # Install the Competitive Companion extension (Chrome/Firefox), open a problem or
 # contest page, click its icon. For every problem it sends, this creates
 #
-#     ~/cp/<contest>/<problem>/sol.cpp      base_template.cpp + a header comment (name, URL, limits)
-#                             input.txt    sample inputs,  ~~~ separated (test_runner.py format)
-#                             output.txt   expected outputs, ~~~ separated
+#     ~/AA_contests/<contest>/<problem>/<problem>.cpp   base_template.cpp + a header comment (name, URL, limits)
+#                                      input.txt       sample inputs,  ~~~ separated (test_runner.py format)
+#                                      output.txt      expected outputs, ~~~ separated
 #
-# e.g. ~/cp/cf_round_987_div_2/A/, ~/cp/ac_beginner_contest_380/C/,
-#      ~/cp/usaco_2024_december_contest_gold/1_cow_trip/
+# e.g. ~/AA_contests/cf_round_987_div_2/A/A.cpp, ~/AA_contests/ac_beginner_contest_380/C/C.cpp,
+#      ~/AA_contests/usaco_2024_december_contest_gold/1_cow_trip/1_cow_trip.cpp
 #
 # A folder that already exists is left alone (hand-added cases survive a re-parse);
-# delete it to fetch fresh samples. Then: run ~/cp/<contest>/<problem>/sol.cpp c
+# delete it to fetch fresh samples. Then: run ~/AA_contests/<contest>/<problem>/<problem>.cpp c
 
 import json
 import os
@@ -26,9 +26,9 @@ import sys
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 # ===== config (edit here) =====
-CP_ROOT = os.path.expanduser(os.environ.get('CP_ROOT', '~/cp'))
+ROOT = os.path.expanduser(os.environ.get('CONTESTS_ROOT', '~/AA_contests'))
 PORT = 27121                        # in Competitive Companion's default port list; no extension config needed
-OPEN_CMD = ['code', '-r']           # opens each new sol.cpp in the current VS Code window; [] to disable
+OPEN_CMD = ['code', '-r']           # opens each new solution in the current VS Code window; [] to disable
 JUDGE_SHORT = {'codeforces': 'cf', 'atcoder': 'ac', 'codechef': 'cc', 'usaco': 'usaco', 'leetcode': 'lc'}
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -63,8 +63,9 @@ def problem_dir(name, has_contest):
 def write_problem(p):
     group, name = p.get('group', ''), p.get('name', '')
     has_contest = ' - ' in group
-    pdir = os.path.join(CP_ROOT, contest_dir(group), problem_dir(name, has_contest))
-    sol = os.path.join(pdir, 'sol.cpp')
+    pname = problem_dir(name, has_contest)
+    pdir = os.path.join(ROOT, contest_dir(group), pname)
+    sol = os.path.join(pdir, pname + '.cpp')
     if os.path.exists(pdir):
         print(f"  exists, skipped: {pdir}")
         return sol
@@ -115,9 +116,9 @@ class Handler(BaseHTTPRequestHandler):
 if __name__ == '__main__':
     if not os.path.exists(TEMPLATE):
         sys.exit(f"template not found: {TEMPLATE}")
-    os.makedirs(CP_ROOT, exist_ok=True)
+    os.makedirs(ROOT, exist_ok=True)
     sys.stdout.reconfigure(line_buffering=True)  # lines show up at once even when piped to a file
-    print(f"Listening on 127.0.0.1:{PORT}, writing to {CP_ROOT}  (Ctrl-C to stop)")
+    print(f"Listening on 127.0.0.1:{PORT}, writing to {ROOT}  (Ctrl-C to stop)")
     try:
         HTTPServer(('127.0.0.1', PORT), Handler).serve_forever()
     except KeyboardInterrupt:

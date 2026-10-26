@@ -22,31 +22,31 @@ Install the [Competitive Companion](https://github.com/jmerle/competitive-compan
 python3 cc_listen.py
 ```
 
-Click the extension icon on a problem page (or a contest page to grab every problem at once). Each problem becomes a folder under `~/cp/`:
+Click the extension icon on a problem page (or a contest page to grab every problem at once). Each problem becomes a folder under `~/AA_contests/`, with the solution named after the problem:
 
 ```
-~/cp/cf_round_987_div_2/A/sol.cpp     # base_template.cpp + a header comment: name, URL, time/memory limit
-                          input.txt   # sample inputs, ~~~ separated
-                          output.txt  # expected outputs, ~~~ separated
-~/cp/ac_beginner_contest_380/C/...
-~/cp/usaco_2024_december_contest_gold/1_cow_trip/...
+~/AA_contests/cf_round_987_div_2/A/A.cpp        # base_template.cpp + a header comment: name, URL, time/memory limit
+                                   input.txt    # sample inputs, ~~~ separated
+                                   output.txt   # expected outputs, ~~~ separated
+~/AA_contests/ac_beginner_contest_380/C/C.cpp
+~/AA_contests/usaco_2024_december_contest_gold/1_cow_trip/1_cow_trip.cpp
 ```
 
-Each new `sol.cpp` opens in VS Code. A folder that already exists is left alone, so hand-added cases survive a re-parse; delete it to fetch fresh samples. Port, root folder and the editor command are at the top of [cc_listen.py](cc_listen.py).
+Each new solution opens in VS Code. A folder that already exists is left alone, so hand-added cases survive a re-parse; delete it to fetch fresh samples. Port, root folder and the editor command are at the top of [cc_listen.py](cc_listen.py).
 
 ## 🚀 Test runner
 
 Sample cases live in `input.txt` next to the solution (separate multiple cases with a `~~~` line); `cc_listen.py` writes them for you, or add your own. Then, from any directory:
 
 ```bash
-python3 test_runner.py sol.cpp
+python3 test_runner.py A.cpp
 ```
 
-- 🎯 **One case only**: `python3 test_runner.py sol.cpp 2`
+- 🎯 **One case only**: `python3 test_runner.py A.cpp 2`
 - ✅ **Compare mode**: append `c` to diff against `output.txt`, mismatches highlighted:
 
 ```bash
-python3 test_runner.py sol.cpp c
+python3 test_runner.py A.cpp c
 ```
 
 Under the hood 🔧:
