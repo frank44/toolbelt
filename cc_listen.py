@@ -49,21 +49,23 @@ def contest_dir(group):
     return short + ('_' + slug(category) if slug(category) else '')
 
 
-def problem_dir(name, has_contest):
-    """'A. Two Sum' / 'A1. Easy' / 'Ex - Hard' -> 'A' / 'A1' / 'Ex'; 'Problem 2. Cow Trip' -> '2_cow_trip'; else slug(name)."""
+def problem_dir(name, has_contest, url):
+    """'A. Two Sum' / 'A1. Easy' / 'Ex - Hard' -> 'A' / 'A1' / 'Ex'; 'Problem 2. Cow Trip' -> '2_cow_trip'; else slug(name).
+    A title with no ASCII letters (Cyrillic Eolymp problems) slugs to nothing: use the problem id from the URL instead."""
     m = re.match(r'^([A-Za-z]{1,2}\d?)\s*[.\-–]\s', name)
     if m and has_contest:
         return m.group(1)
     m = re.match(r'^Problem (\d+)\.\s*(.*)', name)
     if m:
         return m.group(1) + '_' + slug(m.group(2))
-    return slug(name) or 'problem'
+    ids = re.findall(r'\d+', url)
+    return slug(name) or (ids[-1] if ids else 'problem')
 
 
 def write_problem(p):
     group, name = p.get('group', ''), p.get('name', '')
     has_contest = ' - ' in group
-    pname = problem_dir(name, has_contest)
+    pname = problem_dir(name, has_contest, p.get('url', ''))
     pdir = os.path.join(ROOT, contest_dir(group), pname)
     sol = os.path.join(pdir, pname + '.cpp')
     if os.path.exists(pdir):
