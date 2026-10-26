@@ -19,12 +19,13 @@ using i64 = long long;
         - Memory is (n+1)(m+1) of T; for T = i64 and n = m = 3000 that is ~72 MB.
 
     Usage:
-        vector<vector<int>> g = ...;                 // n x m
-        PrefixSum2D<i64> ps(g);                      // T is the sum type, not the cell type
+        vector<vector<i64>> g = ...;                 // n x m, same type as T
+        PrefixSum2D<i64> ps(g);
         auto s = ps.query(r1, c1, r2, c2);           // sum over rows [r1, r2], cols [c1, c2]
 
-        // From any cell function, e.g. counting '#' in a vector<string> grid:
+        // From a cell function (grid of another type, vector<string>, etc.):
         PrefixSum2D<int> cnt(n, m, [&](int i, int j) { return g[i][j] == '#'; });
+        PrefixSum2D<i64> ps2(n, m, [&](int i, int j) { return a[i][j]; });   // a is vector<vector<int>>
 
     ---------------------------------------------------------------------------
 
@@ -48,8 +49,7 @@ struct PrefixSum2D {
     vector<vector<T>> p;  // p[i][j] = sum over [0, i) x [0, j)
 
     // cell(i, j) -> value at row i, col j
-    template <typename F>
-    PrefixSum2D(int n_, int m_, F&& cell) : n(n_), m(m_), p(n_ + 1, vector<T>(m_ + 1, T{})) {
+    PrefixSum2D(int n_, int m_, function<T(int, int)> cell) : n(n_), m(m_), p(n_ + 1, vector<T>(m_ + 1, T{})) {
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < m; j++) {
                 p[i + 1][j + 1] = cell(i, j) + p[i][j + 1] + p[i + 1][j] - p[i][j];
@@ -57,10 +57,9 @@ struct PrefixSum2D {
         }
     }
 
-    template <typename U>
-    PrefixSum2D(const vector<vector<U>>& g)
+    PrefixSum2D(const vector<vector<T>>& g)
         : PrefixSum2D((int)g.size(), g.empty() ? 0 : (int)g[0].size(),
-                      [&](int i, int j) -> T { return g[i][j]; }) {}
+                      [&](int i, int j) { return g[i][j]; }) {}
 
     // sum over rows [r1, r2] and cols [c1, c2], inclusive; 0 if empty
     T query(int r1, int c1, int r2, int c2) const {
