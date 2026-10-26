@@ -21,7 +21,7 @@ CPP_FLAGS = [
     '-D_GLIBCXX_ASSERTIONS',
     '-Winvalid-pch',
     '-fdiagnostics-color=always',    # runner captures output via pipe; keep colors
-    '-fmax-errors=3',
+    '-fmax-errors=1',                # stop at the first error; later ones are usually cascade noise
     # --- debug/sanitizer flags (local only; never ship to CF) ---
     '-fsanitize=address,undefined',  # catch OOB/UAF + UB (signed overflow, etc.)
     '-fsanitize=float-divide-by-zero,float-cast-overflow',
