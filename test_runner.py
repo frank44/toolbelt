@@ -51,8 +51,8 @@ SANITIZER_ENV = {
 }
 
 # ===== Precompiled-header cache (auto-managed, full <bits/stdc++.h>) =====
-PCH_DIR = os.path.expanduser('~/cp/pch')
-LITE_PCH = True   # CP-focused header: drops <regex>/<locale> for speed, keeps <print>
+PCH_DIR = os.path.expanduser('~/.cache/toolbelt/pch')
+LITE_PCH = True   # contest-focused header: drops <regex>/<locale> for speed, keeps <print>
 LITE_HEADER = '''#include <iostream>
 #include <iomanip>
 #include <sstream>
