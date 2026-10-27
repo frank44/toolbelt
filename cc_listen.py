@@ -144,8 +144,14 @@ if __name__ == '__main__':
         sys.exit(f"template not found: {TEMPLATE}")
     os.makedirs(ROOT, exist_ok=True)
     sys.stdout.reconfigure(line_buffering=True)  # lines show up at once even when piped to a file
+    try:
+        server = HTTPServer(('127.0.0.1', PORT), Handler)
+    except OSError as e:
+        sys.exit(f"Can't listen on port {PORT}: {e.strerror}.\n"
+                 f"Another listener is probably still running (a Ctrl-Z'd one stays suspended and keeps the port).\n"
+                 f"Find it with:  lsof -nP -iTCP:{PORT} -sTCP:LISTEN   and kill it, or fg/Ctrl-C it in its terminal.")
     print(f"Listening on 127.0.0.1:{PORT}, writing to {ROOT}  (Ctrl-C to stop)")
     try:
-        HTTPServer(('127.0.0.1', PORT), Handler).serve_forever()
+        server.serve_forever()
     except KeyboardInterrupt:
         print()
