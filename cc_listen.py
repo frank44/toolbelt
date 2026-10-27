@@ -14,9 +14,10 @@
 # e.g. ~/Documents/programming/cf_round_987_div_2/A/A.cpp, ~/Documents/programming/ac_beginner_contest_380/C/C.cpp,
 #      ~/Documents/programming/usaco_2024_december_contest_gold/1_cow_trip/1_cow_trip.cpp
 #
-# A new contest folder is opened in the current VS Code window (one window per contest) and gets
-# a .vscode/tasks.json: the default test task runs the active file in compare mode, the default
-# build task runs it with debug output. Each new solution opens as a tab.
+# Every click points the current VS Code window at that problem's contest folder (one window per
+# contest, switching contests switches the folder) and opens the solution as a tab. A new contest
+# folder gets a .vscode/tasks.json: the default test task runs the active file in compare mode, the default
+# build task runs it with debug output.
 #
 # A folder that already exists is left alone (hand-added cases survive a re-parse);
 # delete it to fetch fresh samples. Then: run ~/Documents/programming/<contest>/<problem>/<problem>.cpp c
@@ -80,7 +81,7 @@ def write_tasks(cdir):
 
 
 def write_problem(p):
-    """Create the problem folder. Returns (solution path, contest dir if this call created it else None)."""
+    """Create the problem folder. Returns (solution path, contest dir)."""
     group, name = p.get('group', ''), p.get('name', '')
     has_contest = ' - ' in group
     pname = problem_dir(name, has_contest, p.get('url', ''))
@@ -89,7 +90,7 @@ def write_problem(p):
     sol = os.path.join(pdir, pname + '.cpp')
     if os.path.exists(pdir):
         print(f"  exists, skipped: {pdir}")
-        return sol, None
+        return sol, cdir
     new_contest = not os.path.exists(cdir)
     os.makedirs(pdir)
     if new_contest:
@@ -107,7 +108,7 @@ def write_problem(p):
     with open(sol, 'w') as f:
         f.write(header + body)
     print(f"  {pdir}  ({len(tests)} tests, {limits})")
-    return sol, cdir if new_contest else None
+    return sol, cdir
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -132,10 +133,10 @@ class Handler(BaseHTTPRequestHandler):
             return
         self.send_response(200); self.end_headers()
         print(f"{p['name']}  [{p.get('group', '')}]")
-        sol, new_cdir = write_problem(p)
+        sol, cdir = write_problem(p)
         if OPEN_CMD and shutil.which(OPEN_CMD[0]):
-            # A new contest folder replaces the window's folder (one window per contest); the file opens as a tab.
-            subprocess.run(OPEN_CMD + ([new_cdir] if new_cdir else []) + [sol])
+            # The contest folder becomes the window's folder (a no-op if it already is); the file opens as a tab.
+            subprocess.run(OPEN_CMD + [cdir, sol])
 
 
 if __name__ == '__main__':

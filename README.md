@@ -32,7 +32,7 @@ Click the extension icon on a problem page (or a contest page to grab every prob
 ~/Documents/programming/usaco_2024_december_contest_gold/1_cow_trip/1_cow_trip.cpp
 ```
 
-VS Code works one contest per window: the first problem of a contest opens its folder in the current window, and every solution opens as a tab. Each contest folder gets a `.vscode/tasks.json` with two tasks on the active file: the default test task (`Run Test Task`) runs compare mode, the default build task (`Cmd+Shift+B`) runs with debug output. A folder that already exists is left alone, so hand-added cases survive a re-parse; delete it to fetch fresh samples. Port, root folder and the editor command are at the top of [cc_listen.py](cc_listen.py).
+VS Code works one contest per window: every click points the current window at that problem's contest folder, so parsing a different contest switches the window to it, and the solution opens as a tab. Each contest folder gets a `.vscode/tasks.json` with two tasks on the active file: the default test task (`Run Test Task`) runs compare mode, the default build task (`Cmd+Shift+B`) runs with debug output. A folder that already exists is left alone, so hand-added cases survive a re-parse; delete it to fetch fresh samples. Port, root folder and the editor command are at the top of [cc_listen.py](cc_listen.py).
 
 ## 🚀 Test runner
 
