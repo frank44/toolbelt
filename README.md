@@ -12,7 +12,17 @@ templates/
   gen_snippet.py          # syncs the template into the VS Code "cf" snippet
 algorithms/               # DP, graph theory, math
 data_structures/          # Fenwick tree, sparse tables, trie, union-find, LCA, ...
+setup/                    # new-machine setup: shell aliases, VS Code keybindings, setup.sh
 ```
+
+## 💻 New machine
+
+```bash
+git clone https://github.com/frank44/toolbelt.git ~/Documents/programming/toolbelt
+~/Documents/programming/toolbelt/setup/setup.sh
+```
+
+The script is safe to re-run. It installs GCC and Python through Homebrew if missing, makes `~/.zshrc` source [setup/aliases.zsh](setup/aliases.zsh) (`run`, `listen`, `cc`, `chk`, `g++23`), installs the VS Code keybindings from [setup/keybindings.json](setup/keybindings.json) (`Cmd+'` runs the active file, `Cmd+Enter` runs it in compare mode) and regenerates the `cf` snippet. It then lists the two manual steps: VS Code's `code` shell command and the Competitive Companion extension. If Homebrew's GCC is newer than the `CPP_COMPILER` at the top of `test_runner.py`, the script says so; update that line.
 
 ## 📥 Fetching problems
 

@@ -1,0 +1,41 @@
+// Place your key bindings in this file to override the defaults
+[
+    // Cmd+' : save the current C++/Java file and run it through toolbelt's
+    // test_runner (all cases, no params). cd into the file's folder first so
+    // input.txt / output.txt are picked up from there.
+    {
+        "key": "cmd+'",
+        "command": "runCommands",
+        "args": {
+            "commands": [
+                "workbench.action.files.save",
+                "workbench.action.terminal.focus",
+                {
+                    "command": "workbench.action.terminal.sendSequence",
+                    "args": {
+                        "text": "cd \"${fileDirname}\" && run \"${fileBasename}\"\r"
+                    }
+                }
+            ]
+        },
+        "when": "editorTextFocus && resourceExtname =~ /\\.(cpp|java)/"
+    },
+    // Cmd+Enter : same, but with the "c" flag (compare output against expected).
+    {
+        "key": "cmd+enter",
+        "command": "runCommands",
+        "args": {
+            "commands": [
+                "workbench.action.files.save",
+                "workbench.action.terminal.focus",
+                {
+                    "command": "workbench.action.terminal.sendSequence",
+                    "args": {
+                        "text": "cd \"${fileDirname}\" && run \"${fileBasename}\" c\r"
+                    }
+                }
+            ]
+        },
+        "when": "editorTextFocus && resourceExtname =~ /\\.(cpp|java)/"
+    }
+]
