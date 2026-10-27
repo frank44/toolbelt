@@ -248,7 +248,7 @@ def run_test_cases(src_file, input_file='input.txt', output_file='output.txt', s
     all_tests_passed = True
 
     # Test files live next to the solution (one folder per problem, see cc_listen.py),
-    # so `run ~/AA_contests/<contest>/<problem>/<problem>.cpp` works from any directory.
+    # so `run ~/Documents/programming/<contest>/<problem>/<problem>.cpp` works from any directory.
     src_dir = os.path.dirname(os.path.abspath(src_file))
     input_file = os.path.join(src_dir, input_file)
     output_file = os.path.join(src_dir, output_file)

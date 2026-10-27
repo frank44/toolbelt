@@ -7,19 +7,19 @@
 # Install the Competitive Companion extension (Chrome/Firefox), open a problem or
 # contest page, click its icon. For every problem it sends, this creates
 #
-#     ~/AA_contests/<contest>/<problem>/<problem>.cpp   base_template.cpp + a header comment (name, URL, limits)
+#     ~/Documents/programming/<contest>/<problem>/<problem>.cpp   base_template.cpp + a header comment (name, URL, limits)
 #                                      input.txt       sample inputs,  ~~~ separated (test_runner.py format)
 #                                      output.txt      expected outputs, ~~~ separated
 #
-# e.g. ~/AA_contests/cf_round_987_div_2/A/A.cpp, ~/AA_contests/ac_beginner_contest_380/C/C.cpp,
-#      ~/AA_contests/usaco_2024_december_contest_gold/1_cow_trip/1_cow_trip.cpp
+# e.g. ~/Documents/programming/cf_round_987_div_2/A/A.cpp, ~/Documents/programming/ac_beginner_contest_380/C/C.cpp,
+#      ~/Documents/programming/usaco_2024_december_contest_gold/1_cow_trip/1_cow_trip.cpp
 #
 # A new contest folder is opened in the current VS Code window (one window per contest) and gets
 # a .vscode/tasks.json: the default test task runs the active file in compare mode, the default
 # build task runs it with debug output. Each new solution opens as a tab.
 #
 # A folder that already exists is left alone (hand-added cases survive a re-parse);
-# delete it to fetch fresh samples. Then: run ~/AA_contests/<contest>/<problem>/<problem>.cpp c
+# delete it to fetch fresh samples. Then: run ~/Documents/programming/<contest>/<problem>/<problem>.cpp c
 
 import json
 import os
@@ -30,7 +30,7 @@ import sys
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 # ===== config (edit here) =====
-ROOT = os.path.expanduser(os.environ.get('CONTESTS_ROOT', '~/AA_contests'))
+ROOT = os.path.expanduser(os.environ.get('CONTESTS_ROOT', '~/Documents/programming'))
 PORT = 27121                        # in Competitive Companion's default port list; no extension config needed
 OPEN_CMD = ['code', '-r']           # opens new contest folders and solutions in the current VS Code window; [] to disable
 JUDGE_SHORT = {'codeforces': 'cf', 'atcoder': 'ac', 'codechef': 'cc', 'usaco': 'usaco', 'leetcode': 'lc'}

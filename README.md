@@ -22,14 +22,14 @@ Install the [Competitive Companion](https://github.com/jmerle/competitive-compan
 python3 cc_listen.py
 ```
 
-Click the extension icon on a problem page (or a contest page to grab every problem at once). Each problem becomes a folder under `~/AA_contests/`, with the solution named after the problem:
+Click the extension icon on a problem page (or a contest page to grab every problem at once). Each problem becomes a folder under `~/Documents/programming/`, with the solution named after the problem:
 
 ```
-~/AA_contests/cf_round_987_div_2/A/A.cpp        # base_template.cpp + a header comment: name, URL, time/memory limit
+~/Documents/programming/cf_round_987_div_2/A/A.cpp        # base_template.cpp + a header comment: name, URL, time/memory limit
                                    input.txt    # sample inputs, ~~~ separated
                                    output.txt   # expected outputs, ~~~ separated
-~/AA_contests/ac_beginner_contest_380/C/C.cpp
-~/AA_contests/usaco_2024_december_contest_gold/1_cow_trip/1_cow_trip.cpp
+~/Documents/programming/ac_beginner_contest_380/C/C.cpp
+~/Documents/programming/usaco_2024_december_contest_gold/1_cow_trip/1_cow_trip.cpp
 ```
 
 VS Code works one contest per window: the first problem of a contest opens its folder in the current window, and every solution opens as a tab. Each contest folder gets a `.vscode/tasks.json` with two tasks on the active file: the default test task (`Run Test Task`) runs compare mode, the default build task (`Cmd+Shift+B`) runs with debug output. A folder that already exists is left alone, so hand-added cases survive a re-parse; delete it to fetch fresh samples. Port, root folder and the editor command are at the top of [cc_listen.py](cc_listen.py).
