@@ -34,31 +34,33 @@ public:
         // k = 2, started or not
         // r = 2, restricted or not
         vector dp(n, vector(10, vector(2, vector(2, -1LL))));
-        return dfs(dp, digits, threshold, 0, 0, 0, 1);
-    }
 
-    i64 dfs(auto& dp, vector<int>& num, int threshold, int pos, int lastDigit, int started, int restricted) {
-        if (pos == (int)num.size()) {
-            return started;
-        }
+        auto dfs = [&](this auto&& self, int pos, int lastDigit, int started, int restricted) -> i64 {
+            if (pos == n) {
+                return started;
+            }
 
-        i64& ans = dp[pos][lastDigit][started][restricted];
-        if (ans != -1) {
+            i64& ans = dp[pos][lastDigit][started][restricted];
+            if (ans != -1) {
+                return ans;
+            }
+            ans = 0;
+            for (int i=0; i<=9; i++) {
+                if (started && abs(i-lastDigit) > threshold) {
+                    continue;
+                }
+                if (restricted && i > digits[pos]) {
+                    continue;
+                }
+                int nStarted = started || i > 0;
+                int nR = restricted && i == digits[pos];
+                ans += self(pos+1, i, nStarted, nR);
+            }
+
             return ans;
-        }
-        ans = 0;
-        for (int i=0; i<=9; i++) {
-            if (started && abs(i-lastDigit) > threshold) {
-                continue;
-            }
-            if (restricted && i > num[pos]) {
-                continue;
-            }
-            int nStarted = started || i > 0;
-            int nR = restricted && i == num[pos];
-            ans += dfs(dp, num, threshold, pos+1, i, nStarted, nR);
-        }
+        };
 
-        return ans;
+        return dfs(0, 0, 0, 1);
     }
+
 };
