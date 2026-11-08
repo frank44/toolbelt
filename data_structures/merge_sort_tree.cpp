@@ -63,7 +63,9 @@ struct MergeSortTree {
         build(2 * inx + 1, L, mid, a);
         build(2 * inx + 2, mid + 1, R, a);
         tree[inx].reserve(R - L + 1);
-        ranges::merge(tree[2 * inx + 1], tree[2 * inx + 2], back_inserter(tree[inx]));
+        const auto& lt = tree[2 * inx + 1];
+        const auto& rt = tree[2 * inx + 2];
+        merge(lt.begin(), lt.end(), rt.begin(), rt.end(), back_inserter(tree[inx]));
     }
 
     // strict: count a[i] < x, else a[i] <= x
@@ -73,7 +75,7 @@ struct MergeSortTree {
         }
         if (l <= L && R <= r) {
             const auto& v = tree[inx];
-            auto it = strict ? ranges::lower_bound(v, x) : ranges::upper_bound(v, x);
+            auto it = strict ? lower_bound(v.begin(), v.end(), x) : upper_bound(v.begin(), v.end(), x);
             return (int)(it - v.begin());
         }
         int mid = L + (R - L) / 2;
