@@ -72,12 +72,13 @@ template<class T> void dbg_ret(const T& v) { cout << " = "; dbg(v); }
 #define trace_depth(k)
 #endif
 
+mt19937_64 rng(chrono::steady_clock::now().time_since_epoch().count());
 template<class T> bool ckmin(T& a, const T& b) { return b < a ? a = b, true : false; }
 template<class T> bool ckmax(T& a, const T& b) { return a < b ? a = b, true : false; }
 
+const double PI = acos(-1.0);
 const i64 MOD = 1e9 + 7;
 const i64 INF = 1e18;
-const double PI = acos(-1.0);
 
 void solve() {
 
