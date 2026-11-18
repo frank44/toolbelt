@@ -138,6 +138,7 @@ RED = '\033[91m'
 GREEN = '\033[92m'
 RESET = '\033[0m'
 BOLD = '\033[1m'
+CYAN = '\033[96m'
 
 
 def highlight_differences(expected_output, actual_output):
@@ -338,7 +339,7 @@ def run_test_cases(src_file, input_file='input.txt', output_file='output.txt', s
                     print(highlight_differences("\n".join(output_case_lines), "\n".join(actual_output_lines)))
                     all_tests_passed = False
             else:
-                print(f"{BOLD}Test Case {i+1} Output (Execution Time: {execution_time:.4f} seconds):{RESET}")
+                print(f"{CYAN}{BOLD}Test Case {i+1} Output (Execution Time: {execution_time:.4f} seconds):{RESET}")
                 print(run_result.stdout.strip())
 
         print("-" * 50)
