@@ -65,6 +65,11 @@ template<class T> void dbg_ret(const T& v) { cout << " = "; dbg(v); }
 #define trace(...) dbg_frame DBG_GUARD(__COUNTER__)(string(dbg_fn(__func__)) + "(" + dbg_str(#__VA_ARGS__ __VA_OPT__(,) __VA_ARGS__) + ")")
 #define tret(...) (dbg_on() ? (dbg_close(), dbg_ret(__VA_ARGS__), cout << endl, 0) : 0)
 #define trace_depth(k) dbg_max_rec = (k)
+struct dbg_input_check { ~dbg_input_check() {  // runs at program exit: did the solution read the input exactly?
+    if (cin.fail() && cin.eof()) cout << "WARNING: read past the end of input (cin >> t on a single test?)" << endl;
+    else if (cin.fail()) cout << "WARNING: a read failed (overflow or wrong type?)" << endl;
+    else if (cin >> ws; !cin.eof()) cout << "WARNING: unread input (forgot cin >> t?)" << endl;
+} } dbg_input_check_;
 #else
 #define debug(...)
 #define trace(...)
@@ -93,10 +98,5 @@ int main() {
     while (t--) {
         solve();
     }
-#ifdef LOCAL
-    if (cin.fail() && cin.eof()) cout << "WARNING: read past the end of input (cin >> t on a single test?)" << endl;
-    else if (cin.fail()) cout << "WARNING: a read failed (overflow or wrong type?)" << endl;
-    else if (cin >> ws; !cin.eof()) cout << "WARNING: unread input (forgot cin >> t?)" << endl;
-#endif
     return 0;
 }
