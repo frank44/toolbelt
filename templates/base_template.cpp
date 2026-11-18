@@ -93,5 +93,8 @@ int main() {
     while (t--) {
         solve();
     }
+#ifdef LOCAL
+    if (cin >> ws; !cin.eof()) cout << "WARNING: unread input (forgot cin >> t?)" << endl;
+#endif
     return 0;
 }

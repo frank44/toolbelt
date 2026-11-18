@@ -69,7 +69,7 @@ Compiler and flags are configured at the top of [test_runner.py](test_runner.py)
 
 ## 📝 Template & snippet
 
-Type `cf` + Tab in any `.cpp` file to expand [base_template.cpp](templates/base_template.cpp): `i64`/`i128`, `ckmin`/`ckmax`, single-test `main` (uncomment one line for multitest), and the debug macros below.
+Type `cf` + Tab in any `.cpp` file to expand [base_template.cpp](templates/base_template.cpp): `i64`/`i128`, `ckmin`/`ckmax`, single-test `main` (uncomment one line for multitest; a debug run warns `unread input` if you forget), and the debug macros below.
 
 ### 🐛 `debug(...)`
 
