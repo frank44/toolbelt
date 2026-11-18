@@ -10,6 +10,7 @@
             "commands": [
                 "workbench.action.files.save",
                 "workbench.action.terminal.focus",
+                "workbench.action.terminal.clear",
                 {
                     "command": "workbench.action.terminal.sendSequence",
                     "args": {
@@ -28,6 +29,7 @@
             "commands": [
                 "workbench.action.files.save",
                 "workbench.action.terminal.focus",
+                "workbench.action.terminal.clear",
                 {
                     "command": "workbench.action.terminal.sendSequence",
                     "args": {
