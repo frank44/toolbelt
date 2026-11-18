@@ -94,7 +94,9 @@ int main() {
         solve();
     }
 #ifdef LOCAL
-    if (cin >> ws; !cin.eof()) cout << "WARNING: unread input (forgot cin >> t?)" << endl;
+    if (cin.fail() && cin.eof()) cout << "WARNING: read past the end of input (cin >> t on a single test?)" << endl;
+    else if (cin.fail()) cout << "WARNING: a read failed (overflow or wrong type?)" << endl;
+    else if (cin >> ws; !cin.eof()) cout << "WARNING: unread input (forgot cin >> t?)" << endl;
 #endif
     return 0;
 }
