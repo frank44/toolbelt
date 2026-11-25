@@ -45,14 +45,14 @@ void growPowers(size_t n) {
 struct PrefixHash {
     vector<i64> pre{0};  // pre[i] = hash of the first i values
 
-    PrefixHash(string& s) {
+    PrefixHash(const string& s) {
         for (char c : s) {
             pre.push_back((mult(pre.back(), BASE) + c) % HASH_MOD);
         }
         growPowers(s.size());
     }
 
-    PrefixHash(vector<int>& a) {
+    PrefixHash(const vector<int>& a) {
         for (int x : a) {
             pre.push_back((mult(pre.back(), BASE) + x) % HASH_MOD);
         }
