@@ -12,14 +12,19 @@ using i128 = __int128;
     Same value as PrefixHash (rolling_hash_prefix.cpp), so the two are comparable
     when both are pasted into one file (keep one copy of the shared globals).
 
+    The struct owns a copy of the current values, so pops take no argument and the
+    deque-style accessors below are available. This costs O(len) memory.
+
     Usage:
         DequeHash d;                    // empty string
-        d.pushBack(c);   d.pushFront(c);
-        d.popBack(c);    d.popFront(c); // c = the value being removed
+        d.push_back(c);  d.push_front(c);
+        d.pop_back();    d.pop_front(); // never call on an empty DequeHash
         d.h                             // hash of the current string
-        d.len                           // its length
+        d.size()                        // its length
+        d.empty(), d.front(), d.back()  // same as on a std::deque
+        d.values                        // the current values, front to back
 
-        Sliding window of size k:  d.pushBack(a[i]);  d.popFront(a[i - k]);
+        Sliding window of size k:  d.push_back(a[i]);  if (d.size() > k) d.pop_front();
 
     Notes:
         - Values must be in [0, HASH_MOD). If the input has negative numbers, add the
@@ -40,13 +45,14 @@ i64 mult(i64 a, i64 b) {
 
 vector<i64> pw{1};  // pw[i] = BASE^i, grown on demand
 
-void growPowers(int n) {
-    while ((int)pw.size() <= n) {
+// ensure pw[0..n] exist
+void growPowers(size_t n) {
+    while (pw.size() <= n) {
         pw.push_back(mult(pw.back(), BASE));
     }
 }
 
-// BASE^(HASH_MOD - 2): only popBack needs it
+// BASE^(HASH_MOD - 2) = BASE^-1 mod HASH_MOD: only pop_back needs it
 const i64 INV_BASE = [] {
     i64 ans = 1;
     i64 a = BASE;
@@ -60,30 +66,38 @@ const i64 INV_BASE = [] {
 }();
 
 struct DequeHash {
-    i64 h = 0;    // hash of the current string
-    int len = 0;
+    i64 h = 0;          // hash of the current string
+    deque<i64> values;  // the current string, front to back
 
-    void pushBack(i64 x) {
-        growPowers(len);
+    size_t size() const { return values.size(); }
+    bool empty() const { return values.empty(); }
+    i64 front() const { return values.front(); }
+    i64 back() const { return values.back(); }
+
+    // append x: h = h * BASE + x
+    void push_back(i64 x) {
         h = (mult(h, BASE) + x) % HASH_MOD;
-        len++;
+        values.push_back(x);
+        growPowers(values.size());
     }
 
-    void pushFront(i64 x) {
-        growPowers(len);
-        h = (mult(x, pw[len]) + h) % HASH_MOD;
-        len++;
+    // prepend x: h = x * BASE^len + h
+    void push_front(i64 x) {
+        growPowers(values.size());
+        h = (mult(x, pw[values.size()]) + h) % HASH_MOD;
+        values.push_front(x);
     }
 
-    // x = the current last value
-    void popBack(i64 x) {
-        h = mult(h + HASH_MOD - x, INV_BASE);
-        len--;
+    // remove the last value: h = (h - back()) / BASE
+    void pop_back() {
+        h = mult(h + HASH_MOD - values.back(), INV_BASE);
+        values.pop_back();
     }
 
-    // x = the current first value
-    void popFront(i64 x) {
-        len--;
-        h = (h + HASH_MOD - mult(x, pw[len])) % HASH_MOD;
+    // remove the first value: h = h - front() * BASE^(len - 1)
+    void pop_front() {
+        i64 x = values.front();
+        values.pop_front();
+        h = (h + HASH_MOD - mult(x, pw[values.size()])) % HASH_MOD;
     }
 };

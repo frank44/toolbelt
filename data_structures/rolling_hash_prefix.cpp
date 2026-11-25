@@ -35,8 +35,9 @@ i64 mult(i64 a, i64 b) {
 
 vector<i64> pw{1};  // pw[i] = BASE^i, grown on demand
 
-void growPowers(int n) {
-    while ((int)pw.size() <= n) {
+// ensure pw[0..n] exist
+void growPowers(size_t n) {
+    while (pw.size() <= n) {
         pw.push_back(mult(pw.back(), BASE));
     }
 }
