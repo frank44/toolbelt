@@ -19,6 +19,11 @@ alias run="$PY3 \"$TOOLBELT/test_runner.py\""
 # listen           -> Competitive Companion listener; one problem folder per click. Ctrl-C to stop.
 alias listen="$PY3 \"$TOOLBELT/cc_listen.py\""
 
+# new calico A B C -> same folders as a listener click, for judges Competitive Companion can't parse
+# grab A [n]       -> next two copies (sample input, then output) become a case in A/; n samples = 2n copies
+alias new="$PY3 \"$TOOLBELT/cc_manual.py\" new"
+alias grab="$PY3 \"$TOOLBELT/cc_manual.py\" grab"
+
 # g++23 x.cpp      -> plain judge-like compile
 alias g++23="$CXX ${CXXFLAGS[*]}"
 
@@ -35,4 +40,15 @@ cc() {
 chk() {
     [ -z "$1" ] && { echo "usage: chk <source.cpp>"; return 1; }
     "$CXX" "${CXXFLAGS[@]}" -fsyntax-only "$1" && echo "ok: $1"
+}
+
+# judge A.cpp      -> compile-check as the judge will: JUDGE_STD, no LOCAL, and C++20/23 extensions
+#                     are errors. CALICO is g++ 13 / C++17; uses g++-13 when installed, else newest GCC.
+JUDGE_STD=c++17
+JUDGE_CXX=/opt/homebrew/bin/g++-13
+[ -x "$JUDGE_CXX" ] || JUDGE_CXX="$CXX"
+judge() {
+    [ -z "$1" ] && { echo "usage: judge <source.cpp>"; return 1; }
+    "$JUDGE_CXX" -std=$JUDGE_STD -Wall -Wextra -Werror=c++20-extensions -Werror=c++23-extensions \
+        -fsyntax-only "$1" && echo "ok ($JUDGE_STD, ${JUDGE_CXX:t}): $1"
 }

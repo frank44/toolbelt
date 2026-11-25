@@ -7,6 +7,7 @@ Personal competitive programming kit: a fast local C++ test runner, a contest te
 ```
 test_runner.py            # compile + run a solution against sample cases
 cc_listen.py              # Competitive Companion listener: one click -> problem folder with samples
+cc_manual.py              # same folders by hand for unsupported judges: new (scaffold), grab (samples from clipboard)
 templates/
   base_template.cpp       # contest template (debug macros, single-test main)
   gen_snippet.py          # syncs the template into the VS Code "cf" snippet
@@ -22,7 +23,7 @@ git clone https://github.com/frank44/toolbelt.git ~/Documents/programming/toolbe
 ~/Documents/programming/toolbelt/setup/setup.sh
 ```
 
-The script is safe to re-run. It installs GCC and Python through Homebrew if missing, makes `~/.zshrc` source [setup/aliases.zsh](setup/aliases.zsh) (`run`, `listen`, `cc`, `chk`, `g++23`), installs the VS Code keybindings from [setup/keybindings.json](setup/keybindings.json) (`Cmd+'` runs the active file, `Cmd+Enter` runs it in compare mode) and regenerates the `cf` snippet. It then lists the two manual steps: VS Code's `code` shell command and the Competitive Companion extension. If Homebrew's GCC is newer than the `CPP_COMPILER` at the top of `test_runner.py`, the script says so; update that line.
+The script is safe to re-run. It installs GCC and Python through Homebrew if missing, makes `~/.zshrc` source [setup/aliases.zsh](setup/aliases.zsh) (`run`, `listen`, `new`, `grab`, `cc`, `chk`, `judge`, `g++23`), installs the VS Code keybindings from [setup/keybindings.json](setup/keybindings.json) (`Cmd+'` runs the active file, `Cmd+Enter` runs it in compare mode) and regenerates the `cf` snippet. It then lists the two manual steps: VS Code's `code` shell command and the Competitive Companion extension. If Homebrew's GCC is newer than the `CPP_COMPILER` at the top of `test_runner.py`, the script says so; update that line.
 
 ## 📥 Fetching problems
 
@@ -32,17 +33,31 @@ Install the [Competitive Companion](https://github.com/jmerle/competitive-compan
 python3 cc_listen.py
 ```
 
-Click the extension icon on a problem page (or a contest page to grab every problem at once). Each problem becomes a folder under `~/Documents/programming/`, with the solution named after the problem:
+Click the extension icon on a problem page (or a contest page to grab every problem at once). Each problem becomes a folder under `~/Documents/programming/contest/`, with the solution named after the problem:
 
 ```
-~/Documents/programming/cf_round_987_div_2/A/A.cpp        # base_template.cpp + a header comment: name, URL, time/memory limit
-                                   input.txt    # sample inputs, ~~~ separated
-                                   output.txt   # expected outputs, ~~~ separated
-~/Documents/programming/ac_beginner_contest_380/C/C.cpp
-~/Documents/programming/usaco_2024_december_contest_gold/1_cow_trip/1_cow_trip.cpp
+~/Documents/programming/contest/cf_round_987_div_2/A/A.cpp        # base_template.cpp + a header comment: name, URL, time/memory limit
+                                           input.txt    # sample inputs, ~~~ separated
+                                           output.txt   # expected outputs, ~~~ separated
+~/Documents/programming/contest/ac_beginner_contest_380/C/C.cpp
+~/Documents/programming/contest/usaco_2024_december_contest_gold/1_cow_trip/1_cow_trip.cpp
 ```
 
 VS Code works one contest per window: every click points the current window at that problem's contest folder, so parsing a different contest switches the window to it, and the solution opens as a tab. Each contest folder gets a `.vscode/tasks.json` with two tasks on the active file: the default test task (`Run Test Task`) runs compare mode, the default build task (`Cmd+Shift+B`) runs with debug output. A folder that already exists is left alone, so hand-added cases survive a re-parse; delete it to fetch fresh samples. Port, root folder and the editor command are at the top of [cc_listen.py](cc_listen.py).
+
+Only one contest is active at a time. A click on a different contest moves the previous one into `~/Documents/programming/contest/archive/`; if the clicked contest is already in the archive (upsolving), it is moved back instead of created again. The symlink `~/Documents/programming/contest/_current` always points at the active contest, so the submit dialog always starts from `_current/A/A.cpp` (pin it in the Finder sidebar once). Only folders the listener or `new` created (they have a `.vscode/tasks.json`) are archived.
+
+### 🩹 Judges Competitive Companion can't parse
+
+On an unsupported site (CALICO, one-off university judges, PDF statements) the extension fails in the browser and nothing reaches the listener. [cc_manual.py](cc_manual.py) builds the same folders by hand:
+
+```bash
+new calico_fall_26 {A..H}   # same layout, tasks.json and VS Code window as a click; empty samples
+grab A                      # copy the sample input, then the sample output: appended to A/ as a case
+grab A 3                    # three samples (six copies); bare `grab` uses the current folder
+```
+
+`grab` watches the clipboard, so the terminal never needs focus: stay on the statement and `Cmd+C` twice per sample. It exits after its last copy, so copying your solution later is never taken for a sample. Run it again to add another case.
 
 ## 🚀 Test runner
 
@@ -58,6 +73,8 @@ python3 test_runner.py A.cpp
 ```bash
 python3 test_runner.py A.cpp c
 ```
+
+- ⚖️ **Judge check** (shell alias): `judge A.cpp` compile-checks with the judge's standard (`JUDGE_STD` in [setup/aliases.zsh](setup/aliases.zsh), C++17 by default) and without `LOCAL`, so C++20/23 features fail here instead of on the judge
 
 Under the hood 🔧:
 - Compiles with sanitizers + `_GLIBCXX_DEBUG`, so out-of-bounds and UB **fail a test** instead of passing silently
