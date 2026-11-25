@@ -8,19 +8,16 @@ using i128 = __int128;
     Polynomial hash mod 2^61 - 1 with a random base.
         build: O(n)    get: O(1)
 
-    hash(a[l..r]) = a[l] * BASE^(r-l) + a[l+1] * BASE^(r-l-1) + ... + a[r-1] * BASE^1 + a[r]
-    Same value as DequeHash (rolling_hash_deque.cpp), so the two are comparable
-    when both are pasted into one file (keep one copy of the shared globals).
+    hash(a[l..r]) = v[l] * BASE^(r-l) + v[l+1] * BASE^(r-l-1) + ... + v[r-1] * BASE^1 + v[r]
+    where v[i] = a[i] + 1, so zeros still count and different lengths don't collide.
 
     Usage:
         PrefixHash h(s);                // string or vector<int>
         i64 x = h.get(l, r);            // hash of s[l..r], 0-indexed, inclusive
 
     Notes:
-        - Values must be in [0, HASH_MOD). If the input has negative numbers, add the
-          same constant to every value before hashing (e.g. x + 1e9 for x >= -1e9).
-        - Value 0 is only safe when the compared strings have equal length
-          ({0} and {0, 0} both hash to 0). If lengths can differ, shift values by +1.
+        - Values must be >= 0. If the input has negative numbers, add the same
+          constant to every value before hashing (e.g. x + 1e9 for x >= -1e9).
 */
 
 const i64 HASH_MOD = (1LL << 61) - 1;
@@ -46,21 +43,23 @@ struct PrefixHash {
     vector<i64> pre{0};  // pre[i] = hash of the first i values
 
     PrefixHash(const string& s) {
+        pre.reserve(s.size() + 1);
         for (char c : s) {
-            pre.push_back((mult(pre.back(), BASE) + c) % HASH_MOD);
+            pre.push_back((mult(pre.back(), BASE) + c + 1) % HASH_MOD);
         }
         growPowers(s.size());
     }
 
     PrefixHash(const vector<int>& a) {
+        pre.reserve(a.size() + 1);
         for (int x : a) {
-            pre.push_back((mult(pre.back(), BASE) + x) % HASH_MOD);
+            pre.push_back((mult(pre.back(), BASE) + x + 1) % HASH_MOD);
         }
         growPowers(a.size());
     }
 
     // hash of [l, r] inclusive
-    i64 get(int l, int r) {
+    i64 get(int l, int r) const {
         return (pre[r + 1] + HASH_MOD - mult(pre[l], pw[r - l + 1])) % HASH_MOD;
     }
 };
